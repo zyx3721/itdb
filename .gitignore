@@ -31,3 +31,4 @@ frontend/.env
 
 # Claude
 .claude/
+requirements.txt
