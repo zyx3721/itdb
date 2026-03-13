@@ -1,6 +1,6 @@
 # ITDB — IT 资产管理系统
 
-一个面向企业 IT 基础设施的资产管理系统，支持硬件设备、软件许可、合同、单据、文件、机架、地点等资产的全生命周期管理。前后端分离架构，由 PHP 版 ITDB 重构为 Go + Vue3。
+基于 [sivann/itdb](https://github.com/sivann/itdb)（PHP + SQLite）重构的 IT 资产管理系统，使用 Go + Vue3 前后端分离架构重新实现。支持硬件设备、软件许可、合同、单据、文件、机架、地点等资产的全生命周期管理。
 
 登录页面左侧动画效果借鉴了 [Animated Characters Login Page](https://21st.dev/community/components/aghasisahakyan1/animated-characters-login-page)。
 
