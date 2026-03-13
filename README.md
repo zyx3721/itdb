@@ -1,6 +1,6 @@
 # ITDB — IT 资产管理系统
 
-一个面向企业 IT 基础设施的资产管理系统，支持硬件设备、软件许可、合同、单据、文件、机架、地点等资产的全生命周期管理。前后端分离架构，由 PHP 版 ITDB 重构为 Go + Vue3。
+基于 [sivann/itdb](https://github.com/sivann/itdb)（PHP + SQLite）重构的 IT 资产管理系统，使用 Go + Vue3 前后端分离架构重新实现。支持硬件设备、软件许可、合同、单据、文件、机架、地点等资产的全生命周期管理。
 
 # 一、项目特性
 
@@ -139,121 +139,251 @@ itdb
 ## 5.1 克隆项目
 
 ```bash
-git clone https://github.com/<your-username>/itdb.git
+git clone https://github.com/zyx3721/itdb.git
 cd itdb
 ```
 
-## 5.2 启动后端
+## 5.2 后端配置与启动
+
+1. 进入后端目录下载相关依赖：
 
 ```bash
 cd backend
-
-# 复制环境变量模板并按需修改
-cp .env.example .env
-
-# 下载依赖
-go mod download
-
-# 运行
-go run ./cmd/server
+go mod tidy
 ```
 
-后端默认监听 `http://127.0.0.1:8080`。
+2. 配置环境变量：
 
-环境变量说明（`.env`）：
+```bash
+# 步骤1：复制模板文件
+cp .env.example .env
 
-| 变量 | 默认值 | 说明 |
-|------|--------|------|
-| `ITDB_SERVER_ADDR` | `:8080` | 监听地址 |
-| `ITDB_DB_PATH` | `data/itdb.db` | SQLite 数据库路径 |
-| `ITDB_UPLOAD_DIR` | `data/files` | 上传文件存储目录 |
-| `ITDB_JWT_SECRET` | 随机生成 | JWT 签名密钥，生产环境务必设置 |
-| `ITDB_HISTORY_LIMIT` | `2000` | 操作历史保留条数 |
-| `ITDB_CORS_ORIGINS` | 空 | 允许的跨域来源，多个用逗号分隔 |
+# 步骤2：编辑 .env，按实际环境修改监听地址、密钥等信息
+# 后端监听地址
+ITDB_SERVER_ADDR=127.0.0.1:8080
 
-> 首次启动会自动创建数据库和默认管理员账户 `admin / admin123`。
+# 数据库与上传目录
+ITDB_DB_PATH=./data/itdb.db
+ITDB_UPLOAD_DIR=./data/files
 
-## 5.3 启动前端
+# 鉴权与接口行为
+ITDB_JWT_SECRET=itdb-change-me
+ITDB_HISTORY_LIMIT=1000
+ITDB_CORS_ORIGINS=*
+```
+
+环境变量说明：
+
+| 变量                 | 默认值           | 说明                           |
+| -------------------- | ---------------- | ------------------------------ |
+| `ITDB_SERVER_ADDR`   | `127.0.0.1:8080` | 监听地址                       |
+| `ITDB_DB_PATH`       | `data/itdb.db`   | SQLite 数据库路径              |
+| `ITDB_UPLOAD_DIR`    | `data/files`     | 上传文件存储目录               |
+| `ITDB_JWT_SECRET`    | `itdb-change-me` | JWT 签名密钥，生产环境务必设置 |
+| `ITDB_HISTORY_LIMIT` | `1000`           | 操作历史保留条数               |
+| `ITDB_CORS_ORIGINS`  | `*`              | 允许的跨域来源，多个用逗号分隔 |
+
+3. 运行后端服务：
+
+```bash
+# 方式1：前台运行（终端关闭则服务停止）
+go run main.go
+
+# 方式2：后台运行（日志输出到 app.log）
+nohup go run main.go > app.log 2>&1 &
+```
+
+后端服务默认运行在 `http://localhost:8080` ，如需指定端口，请修改环境变量文件内的 `ITDB_SERVER_ADDR` 参数。首次启动会自动创建数据库和默认管理员账户 `admin / admin123` 。
+
+## 5.3 前端配置与启动
+
+1. 进入前端目录下载相关依赖：
 
 ```bash
 cd frontend
-
-# 安装依赖
 npm install
-
-# 启动开发服务器
-npm run dev
 ```
 
-前端默认运行在 `http://127.0.0.1:3000`，自动将 `/api` 代理到后端 `http://127.0.0.1:8080`。
+2. 配置 API 地址（可选）：
 
-可通过 `VITE_API_BASE` 环境变量修改后端地址。
+```bash
+# 配置说明：
+# - 后端端口 = 8080：无需创建 .env 文件（默认值为 http://127.0.0.1:8080）
+# - 后端端口 ≠ 8080：需要创建 .env 文件（指定正确端口，例如后端端口改为 8090）
+#   创建 .env 文件，例如：
+echo "VITE_API_BASE=http://localhost:8090" > .env
+```
+
+3. 启动前端服务：
+
+```bash
+# 方式1：前台运行（终端关闭则服务停止）
+npm run dev
+
+# 方式2：后台运行（日志输出到 frontend.log）
+nohup npm run dev > frontend.log 2>&1 &
+```
+
+前端服务默认运行在 `http://localhost:3000`  ，提供了非本机也能访问，将 `localhost` 改为实际 IP 地址即可。
 
 ## 5.4 访问系统
 
-浏览器打开 `http://127.0.0.1:3000`，使用默认账户登录：
-
-- 用户名：`admin`
-- 密码：`admin123`
+- **首页**：`http://localhost:3000`
+- **首次访问**：
+  - 用户名：`admin`
+  - 密码：`admin123`
 
 # 六、生产环境部署
 
-## 6.1 构建后端
+## 6.1 克隆项目
+
+```bash
+git clone https://github.com/zyx3721/itdb.git
+cd itdb
+```
+
+## 6.2 后端构建与配置
+
+1. 进入后端目录下载相关依赖：
 
 ```bash
 cd backend
-
-# Linux
-GOOS=linux GOARCH=amd64 go build -o server ./cmd/server
-
-# Windows
-GOOS=windows GOARCH=amd64 go build -o server.exe ./cmd/server
+go mod tidy
 ```
 
-将编译产物 `server`（或 `server.exe`）和 `data/` 目录部署到服务器，配置 `.env` 后直接运行即可。
+2. 配置环境变量：
 
-## 6.2 构建前端
+```bash
+# 步骤1：复制模板文件
+cp .env.example .env
+
+# 步骤2：编辑 .env，按实际环境修改监听地址、密钥等信息
+# 后端监听地址
+ITDB_SERVER_ADDR=127.0.0.1:8080
+
+# 数据库与上传目录
+ITDB_DB_PATH=./data/itdb.db
+ITDB_UPLOAD_DIR=./data/files
+
+# 鉴权与接口行为
+ITDB_JWT_SECRET=itdb-change-me
+ITDB_HISTORY_LIMIT=1000
+ITDB_CORS_ORIGINS=*
+```
+
+3. 构建后端可执行文件：
+
+```bash
+go build -o itdb-backend main.go
+```
+
+4. 运行后端服务： 
+
+```bash
+# 方式1：前台运行（终端关闭则服务停止）
+./itdb-backend
+
+# 方式2：后台运行（日志输出到 app.log）
+nohup ./itdb-backend > app.log 2>&1 &
+
+# 方法3：加入 systemd 管理启动运行
+# 服务配置参考如下，请自行修改相应目录路径
+cat > /etc/systemd/system/itdb-backend.service <<EOF
+[Unit]
+Description=ITDB Backend Service
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/data/itdb/backend
+ExecStart=/data/itdb/backend/itdb-backend
+
+StandardOutput=append:/data/itdb/backend/app.log
+StandardError=inherit
+
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# 重载服务配置并启动
+systemctl daemon-reload
+systemctl start itdb-backend
+
+# 设置开机自启
+systemctl enable --now itdb-backend
+```
+
+后端服务默认运行在 `http://localhost:8080` ，如需指定端口，请修改环境变量文件内的 `ITDB_SERVER_ADDR` 参数。
+
+## 6.3 前端构建与配置
+
+1. 进入前端目录下载相关依赖：
 
 ```bash
 cd frontend
 npm install
+```
+
+2. 构建前端项目：
+
+```bash
 npm run build
 ```
 
-构建产物在 `frontend/dist/` 目录，部署为静态文件。
+构建产物在 `dist` 目录，可部署到任何静态服务器（Nginx、Vercel、Netlify 等）。生产环境前端无需配置 API 地址，统一通过 Nginx `/api/` 反向代理到后端。
 
-## 6.3 Nginx 反向代理配置
+## 6.4 配置Nginx反向代理
 
-### HTTP 配置
+在服务器上准备前端目录（例如 `/data/itdb/frontend/dist`），**将本地 `dist` 目录中的所有文件和子目录整体上传到该目录**，保持结构不变，例如：
+
+```bash
+/data/itdb/frontend/dist/
+├── assets/
+├── images/
+├── index.html
+```
+
+Nginx 中的 `root` 应指向 **包含 `index.html` 的目录本身**（如 `/data/itdb/frontend/dist` ，可按实际路径调整），而不是上级目录。
+
+### 6.4.1 HTTP 示例
+
+> 配置 Nginx （按需替换域名/路径/证书），`HTTP 示例` ：
 
 ```nginx
 server {
-    listen       80;
-    server_name  itdb.example.com;
-
-    # 前端静态文件
+    listen 80;
+    server_name your-domain.com;   # 修改为你的域名/主机名，例如：itdb.cn
+    
+    # 前端静态资源目录（dist 构建产物）
+    root /data/itdb/frontend/dist;  # 按实际部署路径修改
+    index index.html;
+    
+    # 限制上传文件大小（可选）
+    client_max_body_size 50m;
+    
+    # 前端路由回退到 index.html（适配前端 history 模式）
     location / {
-        root   /opt/itdb/frontend/dist;
-        index  index.html;
         try_files $uri $uri/ /index.html;
     }
-
+    
     # 后端 API 反向代理
     location /api/ {
-        proxy_pass http://127.0.0.1:8080;
+        proxy_pass http://127.0.0.1:8080;  # 与后端 API 相同地址
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-
-        # 文件上传大小限制
-        client_max_body_size 100m;
-
-        # 数据库导入超时设置
-        proxy_read_timeout 300s;
+        proxy_connect_timeout 60s;
         proxy_send_timeout 300s;
+        proxy_read_timeout 300s;
     }
-
+    
     # 健康检查
     location /health {
         proxy_pass http://127.0.0.1:8080;
@@ -261,51 +391,91 @@ server {
 }
 ```
 
-### HTTPS 配置
+### 6.4.2 HTTPS 示例
+
+> HTTPS 示例（含 80→443 跳转，请替换证书路径）：
 
 ```nginx
+# 80 强制跳转到 443
 server {
-    listen       80;
-    server_name  itdb.example.com;
-    return 301   https://$host$request_uri;
+    listen 80;
+    server_name your-domain.com;   # 修改为你的域名/主机名，例如：itdb.cn
+    return 301 https://$host$request_uri;
 }
 
 server {
-    listen       443 ssl http2;
-    server_name  itdb.example.com;
+    # listen 443 ssl http2;  # Nginx 1.25 以下版本写法
+    listen 443 ssl;
+    http2 on;
+    server_name your-domain.com;   # 修改为你的域名/主机名，例如：itdb.cn
 
-    ssl_certificate     /etc/nginx/ssl/itdb.example.com.pem;
-    ssl_certificate_key /etc/nginx/ssl/itdb.example.com.key;
-    ssl_protocols       TLSv1.2 TLSv1.3;
-    ssl_ciphers         HIGH:!aNULL:!MD5;
+    # 证书路径（替换为实际证书文件）
+    ssl_certificate     /usr/local/nginx/ssl/your-domain.com.pem;  # 例如：/usr/local/nginx/ssl/yunwei.cn.pem
+    ssl_certificate_key /usr/local/nginx/ssl/your-domain.com.key;  # 例如：/usr/local/nginx/ssl/yunwei.cn.key
+    
+    # SSL安全优化
+    ssl_protocols              TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers  on;
+    ssl_ciphers                ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384;
+    ssl_session_timeout        10m;
+    ssl_session_cache          shared:SSL:10m;
 
-    # 前端静态文件
+    # 前端静态资源目录（dist 构建产物）
+    root /data/itdb/frontend/dist;  # 按实际部署路径修改
+    index index.html;
+    
+    # 限制上传文件大小（可选）
+    client_max_body_size 50m;
+    
+    # 前端路由回退到 index.html（适配前端 history 模式）
     location / {
-        root   /opt/itdb/frontend/dist;
-        index  index.html;
         try_files $uri $uri/ /index.html;
     }
-
+    
     # 后端 API 反向代理
     location /api/ {
-        proxy_pass http://127.0.0.1:8080;
+        proxy_pass http://127.0.0.1:8080;  # 与后端 API 相同地址
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-
-        client_max_body_size 100m;
-        proxy_read_timeout 300s;
+        proxy_connect_timeout 60s;
         proxy_send_timeout 300s;
+        proxy_read_timeout 300s;
     }
-
+    
+    # 健康检查
     location /health {
         proxy_pass http://127.0.0.1:8080;
     }
 }
 ```
 
-# 七、API 接口总览
+重载 Nginx：
+
+```bash
+# 检查语法
+nginx -t
+
+# 重载配置
+## 方法1
+nginx -s reload
+## 方法2
+systemctl reload nginx
+```
+
+## 6.5 访问系统
+
+- **首页**：`http://your-domain.com`
+- **首次访问**：
+  - 用户名：`admin`
+  - 密码：`admin123`
+- **后端健康检查**：`http://your-domain.com/health` 
+
+# 七、API 文档
 
 所有接口以 `/api` 为前缀，除登录接口外均需在请求头携带 `Authorization: Bearer <token>`。
 
@@ -338,7 +508,7 @@ server {
 
 # 八、数据库说明
 
-使用 SQLite 单文件数据库，默认路径 `backend/data/itdb.db`，共 33 张表。
+使用 SQLite 单文件数据库，默认路径 `backend/data/itdb.db`，共 36 张表。
 
 ## 8.1 核心业务表
 
@@ -400,11 +570,20 @@ server {
 
 **Q: 忘记管理员密码怎么办？**
 
-删除数据库文件 `backend/data/itdb.db`，重启后端服务会自动创建新数据库和默认 `admin / admin123` 账户。或者导入一个新的 .db 文件，如果导入的数据库无用户，系统会自动创建 admin 账户。
+可通过 SQLite 命令行工具直接重置密码（推荐，不会丢失数据）：
+
+```bash
+# 停止后端服务后执行
+sqlite3 backend/data/itdb.db "UPDATE users SET pass = 'admin123' WHERE username = 'admin';"
+```
+
+重启后端服务后，使用 `admin / admin123` 登录，系统会自动将明文密码升级为加密存储。
+
+如果无法使用 sqlite3 工具，也可以删除数据库文件 `backend/data/itdb.db` 并重启服务，但这会清空所有数据，仅建议在全新部署时使用。
 
 **Q: 如何修改 JWT 有效期？**
 
-当前 JWT 有效期为 48 小时，硬编码在后端代码中。如需修改，编辑 `backend/cmd/server/handlers_auth.go` 中的 `tokenExpiry` 常量。
+当前 JWT 有效期为 48 小时，硬编码在后端代码中。如需修改，编辑 `backend/cmd/server/handlers_auth_misc.go` 中第 73 行的 `48 * time.Hour`。
 
 **Q: 数据库文件可以直接复制迁移吗？**
 
@@ -413,6 +592,15 @@ server {
 **Q: 如何从旧版 PHP ITDB 迁移？**
 
 旧版 PHP ITDB 同样使用 SQLite 数据库，可通过系统的「数据库导入」功能直接上传旧版 .db 文件进行替换。系统会自动执行 Schema 迁移。
+
+**Q: 如何启用 LDAP 登录？**
+
+LDAP 登录需要两步配置：
+
+1. 在「系统设置」中配置 LDAP 服务器地址、Base DN、Bind DN 等连接参数，并启用 LDAP 认证
+2. 在「用户管理」中创建与 LDAP 账号同名的用户（用户名必须与 LDAP 中的 `sAMAccountName` 一致）
+
+登录时用户选择「LDAP」模式，系统会先在本地用户表中查找该用户名，再通过 LDAP 服务器验证密码。如果本地用户表中不存在对应用户，即使 LDAP 密码正确也无法登录。
 
 **Q: 自动备份存储在哪里？**
 
