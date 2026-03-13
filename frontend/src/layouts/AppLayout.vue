@@ -288,8 +288,6 @@ onBeforeUnmount(() => {
           :key="item.to"
           :to="item.to"
           class="nav-link"
-          :class="{ 'quick-tip': !!item.tooltip }"
-          :data-quick-tip="item.tooltip || null"
           @click="onNavClick(item.to, $event)"
         >
           {{ item.label }}
