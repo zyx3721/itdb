@@ -4,6 +4,10 @@
 
 登录页面左侧动画效果借鉴了 [Animated Characters Login Page](https://21st.dev/community/components/aghasisahakyan1/animated-characters-login-page)。
 
+# 文档站点
+
+> **在线文档站点：https://itdb-docs.vercel.app/**
+
 # 一、项目截图
 
 ## 1.1 登录页
