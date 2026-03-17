@@ -6,7 +6,7 @@
 
 # 文档站点
 
-> **在线文档站点：https://itdb-docs.vercel.app/**
+> **在线文档站点：https://itdb-docs.jerion.cn/**
 
 # 一、项目截图
 
@@ -588,11 +588,20 @@ systemctl reload nginx
 
 **Q: 忘记管理员密码怎么办？**
 
-删除数据库文件 `backend/data/itdb.db`，重启后端服务会自动创建新数据库和默认 `admin / admin123` 账户。或者导入一个新的 .db 文件，如果导入的数据库无用户，系统会自动创建 admin 账户。
+可通过 SQLite 命令行工具直接重置密码（推荐，不会丢失数据）：
+
+```bash
+# 停止后端服务后执行
+sqlite3 backend/data/itdb.db "UPDATE users SET pass = 'admin123' WHERE username = 'admin';"
+```
+
+重启后端服务后，使用 `admin / admin123` 登录，系统会自动将明文密码升级为加密存储。
+
+如果无法使用 sqlite3 工具，也可以删除数据库文件 `backend/data/itdb.db` 并重启服务，但这会清空所有数据，仅建议在全新部署时使用。
 
 **Q: 如何修改 JWT 有效期？**
 
-当前 JWT 有效期为 48 小时，硬编码在后端代码中。如需修改，编辑 `backend/cmd/server/handlers_auth.go` 中的 `tokenExpiry` 常量。
+当前 JWT 有效期为 48 小时，硬编码在后端代码中。如需修改，编辑 `backend/cmd/server/handlers_auth_misc.go` 中第 73 行的 `48 * time.Hour`。
 
 **Q: 数据库文件可以直接复制迁移吗？**
 
@@ -601,6 +610,15 @@ systemctl reload nginx
 **Q: 如何从旧版 PHP ITDB 迁移？**
 
 旧版 PHP ITDB 同样使用 SQLite 数据库，可通过系统的「数据库导入」功能直接上传旧版 .db 文件进行替换。系统会自动执行 Schema 迁移。
+
+**Q: 如何启用 LDAP 登录？**
+
+LDAP 登录需要两步配置：
+
+1. 在「系统设置」中配置 LDAP 服务器地址、Base DN、Bind DN 等连接参数，并启用 LDAP 认证
+2. 在「用户管理」中创建与 LDAP 账号同名的用户（用户名必须与 LDAP 中的 `sAMAccountName` 一致）
+
+登录时用户选择「LDAP」模式，系统会先在本地用户表中查找该用户名，再通过 LDAP 服务器验证密码。如果本地用户表中不存在对应用户，即使 LDAP 密码正确也无法登录。
 
 **Q: 自动备份存储在哪里？**
 
