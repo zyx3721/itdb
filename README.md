@@ -251,16 +251,103 @@ nohup npm run dev > frontend.log 2>&1 &
   - 用户名：`admin`
   - 密码：`admin123`
 
-# 七、生产环境部署
+# 七、Docker 快速部署
 
-## 7.1 克隆项目
+无需本地安装 Go、Node.js 等环境，拉取镜像即可运行。
+
+## 7.1 前置条件
+
+- 已安装 Docker（版本 20.10+）
+
+## 7.2 快速启动
+
+```bash
+docker run -d \
+  --name itdb \
+  --restart unless-stopped \
+  -p 80:80 \
+  -v /data/itdb:/app/data \
+  registry.cn-shenzhen.aliyuncs.com/zyx3721/itdb:latest
+```
+
+浏览器访问 `http://服务器IP`，默认账号 `admin / admin123`。
+
+## 7.3 环境变量配置
+
+| 变量名 | 默认值 | 说明 |
+|---|---|---|
+| `ITDB_JWT_SECRET` | `itdb-change-me` | JWT 签名密钥，生产环境务必修改 |
+| `ITDB_DB_PATH` | `./data/itdb.db` | SQLite 数据库路径 |
+| `ITDB_UPLOAD_DIR` | `./data/files` | 上传文件目录 |
+| `ITDB_HISTORY_LIMIT` | `1000` | 操作历史保留条数 |
+| `ITDB_CORS_ORIGINS` | `*` | 允许的跨域来源，生产环境建议指定域名 |
+
+示例（使用环境变量）：
+
+```bash
+docker run -d \
+  --name itdb \
+  --restart unless-stopped \
+  -p 80:80 \
+  -v /data/itdb:/app/data \
+  -e ITDB_JWT_SECRET=your-secret-key \
+  -e ITDB_CORS_ORIGINS=https://your-domain.com \
+  registry.cn-shenzhen.aliyuncs.com/zyx3721/itdb:latest
+```
+
+## 7.4 使用 docker-compose
+
+创建 `docker-compose.yml`：
+
+```yaml
+services:
+  itdb:
+    image: registry.cn-shenzhen.aliyuncs.com/zyx3721/itdb:latest
+    container_name: itdb
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - /data/itdb:/app/data
+    environment:
+      - ITDB_JWT_SECRET=your-secret-key
+      - ITDB_CORS_ORIGINS=*
+```
+
+启动：
+
+```bash
+docker-compose up -d
+```
+
+## 7.5 数据持久化说明
+
+挂载目录 `/data/itdb` 包含：
+
+- `itdb.db` — SQLite 数据库
+- `files/` — 上传的附件文件
+- `backups/` — 自动备份文件
+
+迁移时只需将该目录整体复制到新服务器即可。
+
+## 7.6 更新镜像
+
+```bash
+docker pull registry.cn-shenzhen.aliyuncs.com/zyx3721/itdb:latest
+docker stop itdb && docker rm itdb
+# 重新执行 7.2 的启动命令
+```
+
+# 八、生产环境部署
+
+## 8.1 克隆项目
 
 ```bash
 git clone https://github.com/zyx3721/itdb.git
 cd itdb
 ```
 
-## 7.2 后端构建与配置
+## 8.2 后端构建与配置
 
 1. 进入后端目录下载相关依赖：
 
@@ -336,7 +423,7 @@ systemctl enable --now itdb-backend
 
 后端服务默认运行在 `http://localhost:8080` ，如需指定端口，请修改环境变量文件内的 `ITDB_SERVER_ADDR` 参数。
 
-## 7.3 前端构建与配置
+## 8.3 前端构建与配置
 
 1. 进入前端目录下载相关依赖：
 
@@ -353,7 +440,7 @@ npm run build
 
 构建产物在 `dist` 目录，可部署到任何静态服务器（Nginx、Vercel、Netlify 等）。生产环境前端无需配置 API 地址，统一通过 Nginx `/api/` 反向代理到后端。
 
-## 7.4 配置Nginx反向代理
+## 8.4 配置Nginx反向代理
 
 在服务器上准备前端目录（例如 `/data/itdb/frontend/dist`），**将本地 `dist` 目录中的所有文件和子目录整体上传到该目录**，保持结构不变，例如：
 
@@ -366,7 +453,7 @@ npm run build
 
 Nginx 中的 `root` 应指向 **包含 `index.html` 的目录本身**（如 `/data/itdb/frontend/dist` ，可按实际路径调整），而不是上级目录。
 
-### 7.4.1 HTTP 示例
+### 8.4.1 HTTP 示例
 
 > 配置 Nginx （按需替换域名/路径/证书），`HTTP 示例` ：
 
@@ -409,7 +496,7 @@ server {
 }
 ```
 
-### 7.4.2 HTTPS 示例
+### 8.4.2 HTTPS 示例
 
 > HTTPS 示例（含 80→443 跳转，请替换证书路径）：
 
@@ -485,7 +572,7 @@ nginx -s reload
 systemctl reload nginx
 ```
 
-## 7.5 访问系统
+## 8.5 访问系统
 
 - **首页**：`http://your-domain.com`
 - **首次访问**：
@@ -493,7 +580,7 @@ systemctl reload nginx
   - 密码：`admin123`
 - **后端健康检查**：`http://your-domain.com/health` 
 
-# 八、API 文档
+# 九、API 文档
 
 所有接口以 `/api` 为前缀，除登录接口外均需在请求头携带 `Authorization: Bearer <token>`。
 
@@ -524,11 +611,11 @@ systemctl reload nginx
 | 数据库导入 | `/api/import/database` | 上传 .db 文件替换当前数据库 |
 | 健康检查 | `/health`、`/api/health` | 服务状态 |
 
-# 九、数据库说明
+# 十、数据库说明
 
 使用 SQLite 单文件数据库，默认路径 `backend/data/itdb.db`，共 36 张表。
 
-## 9.1 核心业务表
+## 10.1 核心业务表
 
 | 表名 | 说明 |
 |------|------|
@@ -545,7 +632,7 @@ systemctl reload nginx
 | `actions` | 硬件操作记录 |
 | `contractevents` | 合同事件 |
 
-## 9.2 关联表
+## 10.2 关联表
 
 | 表名 | 说明 |
 |------|------|
@@ -563,7 +650,7 @@ systemctl reload nginx
 | `tag2item` | 标签 ↔ 硬件 |
 | `tag2software` | 标签 ↔ 软件 |
 
-## 9.3 字典表
+## 10.3 字典表
 
 | 表名 | 说明 |
 |------|------|
@@ -574,7 +661,7 @@ systemctl reload nginx
 | `statustypes` | 资产状态（含颜色） |
 | `filetypes` | 文件类型 |
 
-## 9.4 系统表
+## 10.4 系统表
 
 | 表名 | 说明 |
 |------|------|
@@ -584,7 +671,7 @@ systemctl reload nginx
 | `labelpapers` | 标签纸预设 |
 | `locareas` | 位置区域（平面图热区） |
 
-# 十、常见问题
+# 十一、常见问题
 
 **Q: 忘记管理员密码怎么办？**
 
@@ -628,7 +715,7 @@ LDAP 登录需要两步配置：
 
 后端默认无大小限制，但如果使用 Nginx 反向代理，需要配置 `client_max_body_size`（参考上方 Nginx 配置示例）。
 
-# 十一、安全建议
+# 十二、安全建议
 
 1. **修改默认密码**：首次部署后立即修改 `admin` 账户的默认密码
 2. **设置 JWT 密钥**：生产环境务必在 `.env` 中设置 `ITDB_JWT_SECRET`，避免使用随机生成的临时密钥
