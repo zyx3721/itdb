@@ -253,7 +253,8 @@ onBeforeUnmount(() => {
   <div class="app-shell">
     <aside class="app-sidebar">
       <div class="brand-block">
-        <h1>ITDB<br>资产管理系统</h1>
+        <img class="brand-block-logo" src="/images/logo.svg" alt="ITDB" />
+        <h1>资产管理系统</h1>
       </div>
 
       <nav class="nav-list">

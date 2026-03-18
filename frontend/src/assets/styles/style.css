@@ -177,6 +177,14 @@ body {
   text-align: center;
 }
 
+.brand-block-logo {
+  display: block;
+  width: min(100%, 146px);
+  height: auto;
+  margin: 0 auto 10px;
+  filter: drop-shadow(0 8px 18px rgba(8, 24, 39, 0.18));
+}
+
 .brand-block h1 {
   margin: 0;
   font-size: 1.5rem;
@@ -186,8 +194,9 @@ body {
 }
 
 .brand-block p {
-  margin: 0.4rem 0 0;
+  margin: 0;
   color: #aac1d8;
+  letter-spacing: 0.08em;
 }
 
 .nav-list {

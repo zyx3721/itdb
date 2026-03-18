@@ -469,10 +469,8 @@ onMounted(() => {
                   <td colspan="4" class="rack-view-base" />
                 </tr>
                 <tr>
-                  <td class="rack-view-wheel-spacer" />
-                  <td class="rack-view-wheel"><img src="/images/rackwheel.png" alt="机架底轮" /></td>
-                  <td class="rack-view-wheel-spacer" />
-                  <td class="rack-view-wheel"><img src="/images/rackwheel.png" alt="机架底轮" /></td>
+                  <td colspan="2" class="rack-view-wheel"><span class="rack-view-wheel-svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="22"/><line x1="2" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="22" y2="12"/></svg></span></td>
+                  <td colspan="2" class="rack-view-wheel"><span class="rack-view-wheel-svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="22"/><line x1="2" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="22" y2="12"/></svg></span></td>
                 </tr>
               </tbody>
             </table>
@@ -687,7 +685,16 @@ onMounted(() => {
   padding-top: 4px;
 }
 
-.rack-view-wheel img {
+.rack-view-wheel-svg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: #6a8097;
+}
+
+.rack-view-wheel-svg svg {
   width: 18px;
   height: 18px;
 }

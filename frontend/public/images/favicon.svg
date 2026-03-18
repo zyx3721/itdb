@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">ITDB icon</title>
+  <desc id="desc">A rack and asset tag mark for the ITDB asset management project.</desc>
+  <defs>
+    <linearGradient id="bg" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1d4c78" />
+      <stop offset="0.55" stop-color="#14395d" />
+      <stop offset="1" stop-color="#0f2b45" />
+    </linearGradient>
+    <linearGradient id="accent" x1="18" y1="14" x2="48" y2="46" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#67e8dc" />
+      <stop offset="0.55" stop-color="#2dd4bf" />
+      <stop offset="1" stop-color="#0d9488" />
+    </linearGradient>
+    <linearGradient id="line" x1="19" y1="17" x2="42" y2="47" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#c9f7f2" stop-opacity="0.95" />
+      <stop offset="1" stop-color="#8fd9d1" stop-opacity="0.78" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#092138" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <rect x="4" y="4" width="56" height="56" rx="18" fill="url(#bg)" />
+  <rect x="5" y="5" width="54" height="54" rx="17" fill="none" stroke="rgba(207,235,255,0.16)" />
+  <path d="M15 18h34M15 27h17M15 36h34M32 45h17" stroke="rgba(167,208,238,0.12)" stroke-width="1.3" stroke-linecap="round" />
+
+  <g filter="url(#shadow)">
+    <path
+      d="M24 16h12c4.97 0 9 4.03 9 9v13c0 5.52-4.48 10-10 10H28c-5.52 0-10-4.48-10-10V22c0-3.31 2.69-6 6-6Z"
+      fill="rgba(9, 26, 44, 0.2)"
+      stroke="url(#accent)"
+      stroke-width="2.4"
+      stroke-linejoin="round"
+    />
+    <rect x="23.2" y="21.2" width="15.8" height="4.5" rx="1.3" fill="none" stroke="url(#line)" stroke-width="1.8" />
+    <rect x="23.2" y="28.7" width="15.8" height="4.5" rx="1.3" fill="none" stroke="url(#line)" stroke-width="1.8" />
+    <rect x="23.2" y="36.2" width="15.8" height="4.5" rx="1.3" fill="none" stroke="url(#line)" stroke-width="1.8" />
+    <circle cx="35.7" cy="23.45" r="1.1" fill="#9ff7ed" />
+    <circle cx="35.7" cy="30.95" r="1.1" fill="#9ff7ed" />
+    <circle cx="35.7" cy="38.45" r="1.1" fill="#9ff7ed" />
+
+    <path d="M18 31H13.5" stroke="url(#accent)" stroke-width="1.8" stroke-linecap="round" />
+    <circle cx="10.5" cy="31" r="2.2" fill="#0f2b45" stroke="#67e8dc" stroke-width="1.6" />
+
+    <path
+      d="M41.5 15h8l5.5 5.5v8.2c0 1.82-1.48 3.3-3.3 3.3h-8.9L39 35.8V18.3c0-1.82 1.48-3.3 3.3-3.3Z"
+      fill="url(#accent)"
+    />
+    <circle cx="48.7" cy="21.4" r="1.55" fill="#0f2b45" />
+
+    <path d="M31.5 48v4.5" stroke="url(#accent)" stroke-width="1.8" stroke-linecap="round" />
+    <ellipse cx="31.5" cy="54.2" rx="6.2" ry="2.3" fill="none" stroke="url(#line)" stroke-width="1.6" />
+    <path d="M25.3 54.2v2.2c0 1.27 2.78 2.3 6.2 2.3s6.2-1.03 6.2-2.3v-2.2" fill="none" stroke="url(#line)" stroke-width="1.6" />
+  </g>
+</svg>

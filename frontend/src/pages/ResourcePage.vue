@@ -5044,7 +5044,7 @@ onBeforeUnmount(() => {
                         :disabled="!file.id"
                         @click="file.id ? openFilePreviewInNewWindow(file.id) : undefined"
                       >
-                        <img class="field-link-icon-image" src="/images/down.png" :alt="file.previewTip" />
+                        <span class="field-link-icon-image"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
                       </button>
                     </div>
                   </div>
@@ -5349,7 +5349,7 @@ onBeforeUnmount(() => {
                         :disabled="!Number(form.rackId ?? 0)"
                         @click="openSelectedRackViewInNewWindow"
                       >
-                        <img class="field-link-icon-image" src="/images/eye.png" alt="查看机架晟图" />
+                        <span class="field-link-icon-image"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
                       </button>
                       <button
                         class="field-link-icon quick-tip"
@@ -5540,7 +5540,7 @@ onBeforeUnmount(() => {
                           :data-quick-tip="'解除关联，保存硬件后生效。\n若文件是孤立的(没有其他内容与之相关联)，则会将其删除'"
                           @click="removeLinkedFileSelection(file.id)"
                         >
-                          <img class="field-link-icon-image" src="/images/delete.png" alt="删除关联" />
+                          <span class="field-link-icon-image"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>
                         </button>
                         <button
                           type="button"
@@ -5548,7 +5548,7 @@ onBeforeUnmount(() => {
                           :data-quick-tip="`在新窗口编辑文件 ${Number(file.id ?? 0) || '-'}`"
                           @click="openResourceEditInNewWindow('files', Number(file.id ?? 0))"
                         >
-                          <img class="field-link-icon-image" src="/images/edit.png" alt="编辑文件" />
+                          <span class="field-link-icon-image"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
                         </button>
                         <button
                           type="button"
@@ -5556,7 +5556,7 @@ onBeforeUnmount(() => {
                           :data-quick-tip="`下载文件: ${file.fileName || '-'}`"
                           @click="downloadLinkedFileByID(file.id, file.fileName)"
                         >
-                          <img class="field-link-icon-image" src="/images/down.png" alt="下载文件" />
+                          <span class="field-link-icon-image"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
                         </button>
                       </div>
                     </div>
@@ -6158,7 +6158,7 @@ onBeforeUnmount(() => {
                           :data-quick-tip="'解除关联，保存软件后生效。\n若文件是孤立的(没有其他内容与之相关联)，则会将其删除'"
                           @click="removeLinkedFileSelection(file.id)"
                         >
-                          <img class="field-link-icon-image" src="/images/delete.png" alt="删除关联" />
+                          <span class="field-link-icon-image"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>
                         </button>
                         <button
                           type="button"
@@ -6166,7 +6166,7 @@ onBeforeUnmount(() => {
                           :data-quick-tip="`在新窗口编辑文件 ${Number(file.id ?? 0) || '-'}`"
                           @click="openResourceEditInNewWindow('files', Number(file.id ?? 0))"
                         >
-                          <img class="field-link-icon-image" src="/images/edit.png" alt="编辑文件" />
+                          <span class="field-link-icon-image"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
                         </button>
                         <button
                           type="button"
@@ -6174,7 +6174,7 @@ onBeforeUnmount(() => {
                           :data-quick-tip="`下载文件: ${file.fileName || '-'}`"
                           @click="downloadLinkedFileByID(file.id, file.fileName)"
                         >
-                          <img class="field-link-icon-image" src="/images/down.png" alt="下载文件" />
+                          <span class="field-link-icon-image"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
                         </button>
                       </div>
                     </div>
@@ -6633,7 +6633,7 @@ onBeforeUnmount(() => {
                           :data-quick-tip="'解除关联，保存单据后生效。\n若文件是孤立的(没有其他内容与之相关联)，则会将其删除'"
                           @click="removeLinkedFileSelection(file.id)"
                         >
-                          <img class="field-link-icon-image" src="/images/delete.png" alt="删除关联" />
+                          <span class="field-link-icon-image"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>
                         </button>
                         <button
                           type="button"
@@ -6641,7 +6641,7 @@ onBeforeUnmount(() => {
                           :data-quick-tip="`在新窗口编辑文件 ${Number(file.id ?? 0) || '-'}`"
                           @click="openResourceEditInNewWindow('files', Number(file.id ?? 0))"
                         >
-                          <img class="field-link-icon-image" src="/images/edit.png" alt="编辑文件" />
+                          <span class="field-link-icon-image"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
                         </button>
                         <button
                           type="button"
@@ -6649,7 +6649,7 @@ onBeforeUnmount(() => {
                           :data-quick-tip="`下载文件: ${file.fileName || '-'}`"
                           @click="downloadLinkedFileByID(file.id, file.fileName)"
                         >
-                          <img class="field-link-icon-image" src="/images/down.png" alt="下载文件" />
+                          <span class="field-link-icon-image"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
                         </button>
                       </div>
                     </div>
@@ -7169,7 +7169,7 @@ onBeforeUnmount(() => {
                           :data-quick-tip="'解除关联，保存合同后生效。\n若文件是孤立的(没有其他内容与之相关联)，则会将其删除'"
                           @click="removeLinkedFileSelection(file.id)"
                         >
-                          <img class="field-link-icon-image" src="/images/delete.png" alt="删除关联" />
+                          <span class="field-link-icon-image"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>
                         </button>
                         <button
                           type="button"
@@ -7177,7 +7177,7 @@ onBeforeUnmount(() => {
                           :data-quick-tip="`在新窗口编辑文件 ${Number(file.id ?? 0) || '-'}`"
                           @click="openResourceEditInNewWindow('files', Number(file.id ?? 0))"
                         >
-                          <img class="field-link-icon-image" src="/images/edit.png" alt="编辑文件" />
+                          <span class="field-link-icon-image"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
                         </button>
                         <button
                           type="button"
@@ -7185,7 +7185,7 @@ onBeforeUnmount(() => {
                           :data-quick-tip="`下载文件: ${file.fileName || '-'}`"
                           @click="downloadLinkedFileByID(file.id, file.fileName)"
                         >
-                          <img class="field-link-icon-image" src="/images/down.png" alt="下载文件" />
+                          <span class="field-link-icon-image"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
                         </button>
                       </div>
                     </div>
@@ -8278,10 +8278,8 @@ onBeforeUnmount(() => {
                         <td colspan="4" class="rack-view-base" />
                       </tr>
                       <tr>
-                        <td class="rack-view-wheel-spacer" />
-                        <td class="rack-view-wheel"><img src="/images/rackwheel.png" alt="机架底轮" /></td>
-                        <td class="rack-view-wheel-spacer" />
-                        <td class="rack-view-wheel"><img src="/images/rackwheel.png" alt="机架底轮" /></td>
+                        <td colspan="2" class="rack-view-wheel"><span class="rack-view-wheel-svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="22"/><line x1="2" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="22" y2="12"/></svg></span></td>
+                        <td colspan="2" class="rack-view-wheel"><span class="rack-view-wheel-svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="22"/><line x1="2" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="22" y2="12"/></svg></span></td>
                       </tr>
                     </tfoot>
                   </table>
@@ -9100,9 +9098,16 @@ onBeforeUnmount(() => {
 }
 
 .field-link-icon-image {
-  display: block;
-  width: 12px;
-  height: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+}
+
+.field-link-icon-image svg {
+  width: 14px;
+  height: 14px;
 }
 
 .field-link-icon:disabled {
@@ -9985,7 +9990,17 @@ onBeforeUnmount(() => {
   padding: 2px 0 0;
 }
 
-.rack-view-wheel img {
+.rack-view-wheel-svg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  color: #6a8097;
+}
+
+.rack-view-wheel-svg svg {
+  width: 30px;
   height: 30px;
 }
 

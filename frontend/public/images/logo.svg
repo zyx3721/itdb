@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 84" role="img" aria-labelledby="title desc">
+  <title id="title">ITDB logo</title>
+  <desc id="desc">A horizontal logo for ITDB using a rack and asset tag symbol with the ITDB wordmark.</desc>
+  <defs>
+    <linearGradient id="bg" x1="10" y1="8" x2="74" y2="74" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1d4c78" />
+      <stop offset="0.55" stop-color="#14395d" />
+      <stop offset="1" stop-color="#0f2b45" />
+    </linearGradient>
+    <linearGradient id="accent" x1="18" y1="16" x2="56" y2="54" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#67e8dc" />
+      <stop offset="0.55" stop-color="#2dd4bf" />
+      <stop offset="1" stop-color="#0d9488" />
+    </linearGradient>
+    <linearGradient id="line" x1="22" y1="19" x2="50" y2="54" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d3fbf6" stop-opacity="0.96" />
+      <stop offset="1" stop-color="#95e0d7" stop-opacity="0.8" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#0c2238" flood-opacity="0.22" />
+    </filter>
+  </defs>
+
+  <g filter="url(#shadow)">
+    <rect x="10" y="10" width="64" height="64" rx="20" fill="url(#bg)" />
+    <rect x="11" y="11" width="62" height="62" rx="19" fill="none" stroke="rgba(207,235,255,0.16)" />
+    <path d="M22 25h40M22 35h20M22 45h40M41 55h21" stroke="rgba(167,208,238,0.12)" stroke-width="1.5" stroke-linecap="round" />
+
+    <path
+      d="M31 23h14c5.52 0 10 4.48 10 10v14c0 5.52-4.48 10-10 10h-8c-5.52 0-10-4.48-10-10V29c0-3.31 2.69-6 6-6Z"
+      fill="rgba(9, 26, 44, 0.18)"
+      stroke="url(#accent)"
+      stroke-width="2.6"
+      stroke-linejoin="round"
+    />
+    <rect x="33" y="29" width="18" height="5" rx="1.4" fill="none" stroke="url(#line)" stroke-width="1.8" />
+    <rect x="33" y="37" width="18" height="5" rx="1.4" fill="none" stroke="url(#line)" stroke-width="1.8" />
+    <rect x="33" y="45" width="18" height="5" rx="1.4" fill="none" stroke="url(#line)" stroke-width="1.8" />
+    <circle cx="47.2" cy="31.5" r="1.15" fill="#9ff7ed" />
+    <circle cx="47.2" cy="39.5" r="1.15" fill="#9ff7ed" />
+    <circle cx="47.2" cy="47.5" r="1.15" fill="#9ff7ed" />
+
+    <path d="M27 39H21.5" stroke="url(#accent)" stroke-width="2" stroke-linecap="round" />
+    <circle cx="18" cy="39" r="2.4" fill="#0f2b45" stroke="#67e8dc" stroke-width="1.7" />
+
+    <path
+      d="M49 21h9l6 6v9c0 1.93-1.57 3.5-3.5 3.5H50.4L46 43.9V24.5c0-1.93 1.57-3.5 3.5-3.5Z"
+      fill="url(#accent)"
+    />
+    <circle cx="57.1" cy="28" r="1.65" fill="#0f2b45" />
+
+    <path d="M41 57v5" stroke="url(#accent)" stroke-width="2" stroke-linecap="round" />
+    <ellipse cx="41" cy="64" rx="7.2" ry="2.6" fill="none" stroke="url(#line)" stroke-width="1.7" />
+    <path d="M33.8 64v2.5c0 1.44 3.22 2.6 7.2 2.6s7.2-1.16 7.2-2.6V64" fill="none" stroke="url(#line)" stroke-width="1.7" />
+  </g>
+
+  <g fill="#123251">
+    <text
+      x="96"
+      y="45"
+      font-family="'IBM Plex Mono', 'Segoe UI', sans-serif"
+      font-size="31"
+      font-weight="700"
+      letter-spacing="3.2"
+    >
+      ITDB
+    </text>
+  </g>
+
+  <rect x="98" y="53" width="76" height="4" rx="2" fill="#0d9488" opacity="0.92" />
+</svg>

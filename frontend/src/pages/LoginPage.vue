@@ -263,7 +263,7 @@ async function onPrimaryAction() {
     <div class="login-layout">
       <section class="login-scene-panel" aria-hidden="true">
         <div class="scene-brand">
-          <img class="scene-brand-logo" src="/images/favicon.png" alt="ITDB" />
+          <img class="scene-brand-logo" src="/images/favicon.svg" alt="ITDB" />
           <strong>ITDB</strong>
         </div>
 
