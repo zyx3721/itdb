@@ -12,11 +12,11 @@
 
 ## 1.1 登录页
 
-![image-20260313174118765](https://raw.githubusercontent.com/zyx3721/Picbed/main/blog-images/2026/03/13/74587552586a79ffd81ec863b2a03dc0-image-20260313174118765-844435.png)
+![image-20260318151147644](https://raw.githubusercontent.com/zyx3721/Picbed/main/blog-images/2026/03/18/8c353e37334aec1290b97b5c438d4b3c-image-20260318151147644-84542a.png)
 
 ## 1.2 首页
 
-![image-20260313174152051](https://raw.githubusercontent.com/zyx3721/Picbed/main/blog-images/2026/03/13/549633c97062e2df1facc6585ee98b2f-image-20260313174152051-bbb467.png)
+![image-20260318151153654](https://raw.githubusercontent.com/zyx3721/Picbed/main/blog-images/2026/03/18/52b34ff54a1d9f1767a94be7bac61a08-image-20260318151153654-f8f737.png)
 
 
 
