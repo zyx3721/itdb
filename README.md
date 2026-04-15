@@ -19,6 +19,9 @@
 - [十、数据库说明](#十数据库说明)
 - [十一、常见问题](#十一常见问题)
 - [十二、安全建议](#十二安全建议)
+- [十三、许可证](#十三许可证)
+- [十四、致谢](#十四致谢)
+- [十五、联系方式](#十五联系方式)
 
 # 文档站点
 
@@ -741,3 +744,36 @@ LDAP 登录需要两步配置：
 6. **文件目录权限**：确保 `backend/data/` 目录权限合理，避免非授权访问数据库和上传文件
 7. **环境变量安全**：`.env` 文件包含敏感信息，确保不被提交到版本控制（已在 `.gitignore` 中排除）
 8. **CORS 配置**：生产环境按需配置 `ITDB_CORS_ORIGINS`，避免设置为 `*`
+
+# 十三、许可证
+
+本项目采用 [MIT License](LICENSE) 开源协议。
+
+MIT License 是一个宽松的开源许可证，允许您自由地使用、复制、修改、合并、发布、分发、再许可和/或销售本软件的副本。唯一的要求是在所有副本或重要部分中保留版权声明和许可声明。
+
+# 十四、致谢
+
+感谢以下开源项目和技术社区的支持：
+
+- [sivann/itdb](https://github.com/sivann/itdb) - 原始 PHP 版本 ITDB 项目
+- [Gin](https://github.com/gin-gonic/gin) - 高性能的 Go Web 框架
+- [Vue.js](https://github.com/vuejs/core) - 渐进式 JavaScript 框架
+- [GORM](https://github.com/go-gorm/gorm) - Go 语言 ORM 库
+- [modernc.org/sqlite](https://gitlab.com/cznic/sqlite) - 纯 Go 实现的 SQLite 驱动
+- [Ant Design Vue](https://github.com/vueComponent/ant-design-vue) - 企业级 UI 组件库
+- [Pinia](https://github.com/vuejs/pinia) - Vue 3 状态管理库
+- [Vite](https://github.com/vitejs/vite) - 下一代前端构建工具
+
+特别感谢所有为本项目贡献代码、提出建议和报告问题的开发者。
+
+# 十五、联系方式
+
+如果您在使用过程中遇到问题，或有任何建议和反馈，欢迎通过以下方式联系：
+
+- **Email**: 416685476@qq.com
+- **GitHub Issues**: [https://github.com/zyx3721/itdb/issues](https://github.com/zyx3721/itdb/issues)
+- **项目主页**: [https://github.com/zyx3721/itdb](https://github.com/zyx3721/itdb)
+
+---
+
+**⭐ 如果这个项目对您有帮助，欢迎 Star 支持！**
