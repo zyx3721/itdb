@@ -125,8 +125,8 @@ body {
   height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(215, 230, 245, 0.24) transparent;
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
 }
 
 .app-sidebar::before {
@@ -153,22 +153,20 @@ body {
 }
 
 .app-sidebar::-webkit-scrollbar {
-  width: 8px;
+  display: none;
+  width: 0;
 }
 
 .app-sidebar::-webkit-scrollbar-track {
-  background: transparent;
+  display: none;
 }
 
 .app-sidebar::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: rgba(215, 230, 245, 0.24);
-  border: 2px solid transparent;
-  background-clip: content-box;
+  display: none;
 }
 
 .app-sidebar::-webkit-scrollbar-thumb:hover {
-  background: rgba(215, 230, 245, 0.36);
+  display: none;
 }
 
 .brand-block {

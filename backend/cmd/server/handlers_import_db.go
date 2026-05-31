@@ -135,6 +135,22 @@ func (a *App) handleImportDatabase(w http.ResponseWriter, r *http.Request) {
 
 	a.db = newDB
 
+	// 迁移旧平台数据库结构（处理 settings 和 statustypes 表差异）
+	if err := migrateOldDatabaseSchema(newDB); err != nil {
+		log.Printf("迁移数据库结构失败: %v, 正在从备份回滚", err)
+		newDB.Close()
+		os.Remove(absPath)
+		copyFile(backupPath, absPath)
+		a.db, _ = sql.Open("sqlite", dbPath)
+		setupSQLite(a.db)
+		a.db.SetMaxOpenConns(1)
+		a.db.SetMaxIdleConns(1)
+		a.db.SetConnMaxLifetime(0)
+		a.db.SetConnMaxIdleTime(0)
+		writeError(w, http.StatusInternalServerError, fmt.Sprintf("数据库结构迁移失败: %v，已恢复原数据库", err))
+		return
+	}
+
 	// 检查导入的数据库是否有用户，没有则自动创建 admin
 	var userCount int64
 	if err := newDB.QueryRow("SELECT COUNT(*) FROM users").Scan(&userCount); err == nil && userCount == 0 {
