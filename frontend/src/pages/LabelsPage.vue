@@ -1,76 +1,76 @@
 ﻿<script setup lang="ts">
-import { computed, nextTick, reactive, ref } from 'vue'
-import QRCode from 'qrcode'
-import api from '../api/client'
-import { useAuthStore } from '../stores/auth'
+import { computed, nextTick, reactive, ref } from 'vue';
+import QRCode from 'qrcode';
+import api from '../api/client';
+import { useAuthStore } from '../stores/auth';
 
 type LabelItem = {
-  id: number
-  text: string
-  status?: number
-  statusdesc?: string
-  statuscolor?: string
-  itemtype?: string
-  manufacturer?: string
-  model?: string
-  sn?: string
-  label?: string
-}
+  id: number;
+  text: string;
+  status?: number;
+  statusdesc?: string;
+  statuscolor?: string;
+  itemtype?: string;
+  manufacturer?: string;
+  model?: string;
+  sn?: string;
+  label?: string;
+};
 
 type LabelPreset = {
-  id: number
-  name: string
-  rows: number
-  cols: number
-  lwidth: string
-  lheight: string
-  vpitch: string
-  hpitch: string
-  tmargin: string
-  bmargin: string
-  lmargin: string
-  rmargin: string
-  border: string
-  padding: string
-  fontsize: string
-  headerfontsize: string
-  barcodesize: string
-  idfontsize: string
-  wantbarcode: number
-  wantheadertext: number
-  wantheaderimage: number
-  headertext: string
-  image: string
-  imagewidth: string
-  imageheight: string
-  papersize: string
-  qrtext: string
-  wantnotext: number
-  wantraligntext: number
-  labelskip?: string
-}
+  id: number;
+  name: string;
+  rows: number;
+  cols: number;
+  lwidth: string;
+  lheight: string;
+  vpitch: string;
+  hpitch: string;
+  tmargin: string;
+  bmargin: string;
+  lmargin: string;
+  rmargin: string;
+  border: string;
+  padding: string;
+  fontsize: string;
+  headerfontsize: string;
+  barcodesize: string;
+  idfontsize: string;
+  wantbarcode: number;
+  wantheadertext: number;
+  wantheaderimage: number;
+  headertext: string;
+  image: string;
+  imagewidth: string;
+  imageheight: string;
+  papersize: string;
+  qrtext: string;
+  wantnotext: number;
+  wantraligntext: number;
+  labelskip?: string;
+};
 
 type LabelPreview = {
-  id: number
-  text: string
-  headerText: string
-  qrText: string
-  qrImage?: string
-  itemType?: string
-  manufacturer?: string
-  model?: string
-  sn?: string
-  label?: string
-  ipv4?: string
-  ipv6?: string
-  dnsName?: string
-}
+  id: number;
+  text: string;
+  headerText: string;
+  qrText: string;
+  qrImage?: string;
+  itemType?: string;
+  manufacturer?: string;
+  model?: string;
+  sn?: string;
+  label?: string;
+  ipv4?: string;
+  ipv6?: string;
+  dnsName?: string;
+};
 
 type PaperSizeInfo = {
-  key: string
-  widthMm: number
-  heightMm: number
-}
+  key: string;
+  widthMm: number;
+  heightMm: number;
+};
 
 const paperNameDefaults = `
 A0
@@ -391,7 +391,9 @@ FR_ECU
 FR_COURONNE
 FR_TELLIERE
 FR_POT
-`.trim().split('\n')
+`
+  .trim()
+  .split('\n');
 
 const isoASizeList: Array<[number, number]> = [
   [841, 1189],
@@ -407,7 +409,7 @@ const isoASizeList: Array<[number, number]> = [
   [26, 37],
   [18, 26],
   [13, 18],
-]
+];
 
 const isoBSizeList: Array<[number, number]> = [
   [1000, 1414],
@@ -423,7 +425,7 @@ const isoBSizeList: Array<[number, number]> = [
   [31, 44],
   [22, 31],
   [15, 22],
-]
+];
 
 const namedPaperSizes: Record<string, [number, number]> = {
   LETTER: [216, 279],
@@ -451,29 +453,29 @@ const namedPaperSizes: Record<string, [number, number]> = {
   ARCH_D: [610, 914],
   ARCH_E: [914, 1219],
   ARCH_E1: [762, 1067],
-}
+};
 
-const auth = useAuthStore()
+const auth = useAuthStore();
 
-const search = ref('')
-const orderBy = ref<'type' | 'id' | 'id_desc' | 'model'>('type')
-const items = ref<LabelItem[]>([])
-const presets = ref<LabelPreset[]>([])
-const selectedIds = ref<number[]>([])
-const previewRows = ref<LabelPreview[]>([])
-const previewSectionRef = ref<HTMLElement | null>(null)
+const search = ref('');
+const orderBy = ref<'type' | 'id' | 'id_desc' | 'model'>('type');
+const items = ref<LabelItem[]>([]);
+const presets = ref<LabelPreset[]>([]);
+const selectedIds = ref<number[]>([]);
+const previewRows = ref<LabelPreview[]>([]);
+const previewSectionRef = ref<HTMLElement | null>(null);
 
-const loadingItems = ref(false)
-const loadingPresets = ref(false)
-const loadingPreview = ref(false)
-const printingPreview = ref(false)
-const savingPreset = ref(false)
-const deletingPreset = ref(false)
-const confirmOpen = ref(false)
-const pendingDeletePresetId = ref<number | null>(null)
-const error = ref('')
-const success = ref('')
-let loadItemsSeq = 0
+const loadingItems = ref(false);
+const loadingPresets = ref(false);
+const loadingPreview = ref(false);
+const printingPreview = ref(false);
+const savingPreset = ref(false);
+const deletingPreset = ref(false);
+const confirmOpen = ref(false);
+const pendingDeletePresetId = ref<number | null>(null);
+const error = ref('');
+const success = ref('');
+let loadItemsSeq = 0;
 
 const form = reactive({
   name: '',
@@ -505,39 +507,51 @@ const form = reactive({
   wantnotext: false,
   wantraligntext: false,
   labelskip: '0',
-})
+});
 
-const selectedCount = computed(() => selectedIds.value.length)
+const selectedCount = computed(() => selectedIds.value.length);
 const allChecked = computed(() => {
-  if (items.value.length === 0) return false
-  const selected = new Set(selectedIds.value)
-  return items.value.every((item) => selected.has(item.id))
-})
-const canWrite = computed(() => !auth.isReadOnly)
+  if (items.value.length === 0) return false;
+  const selected = new Set(selectedIds.value);
+  return items.value.every(item => selected.has(item.id));
+});
+const canWrite = computed(() => !auth.isReadOnly);
 const confirmMessage = computed(() =>
-  pendingDeletePresetId.value ? `确认删除预设 编号=${pendingDeletePresetId.value} 吗？` : '',
-)
+  pendingDeletePresetId.value ? `确认删除预设 编号=${pendingDeletePresetId.value} 吗？` : ''
+);
 const orderLinks = computed(() => [
   { key: 'type' as const, text: '[类型]', tip: '订单: 状态, 硬件类型, 厂商, 编号' },
   { key: 'id' as const, text: '[编号]', tip: '订单: 状态, 编号, 硬件类型, 厂商' },
   { key: 'id_desc' as const, text: '[编号降序]', tip: '订单: 状态, 编号(逆序), 硬件类型, 厂商' },
   { key: 'model' as const, text: '[型号]', tip: '订单: 状态, 型号, 硬件类型, 厂商' },
-])
+]);
 const defaultStatusColorMap: Record<string, string> = {
   使用中: '#2f7fba',
   库存: '#16a34a',
   有故障: '#dc2626',
   报废: '#9ca3af',
-}
+};
 
 const groupedItems = computed(() => {
-  const groups: Array<{ key: string; title: string; color: string; rows: LabelItem[]; showHeader: boolean }> = []
-  let current: { key: string; title: string; color: string; rows: LabelItem[]; showHeader: boolean } | null = null
+  const groups: Array<{
+    key: string;
+    title: string;
+    color: string;
+    rows: LabelItem[];
+    showHeader: boolean;
+  }> = [];
+  let current: {
+    key: string;
+    title: string;
+    color: string;
+    rows: LabelItem[];
+    showHeader: boolean;
+  } | null = null;
 
   for (const item of items.value) {
-    const statusID = Number(item.status ?? 0)
-    const statusTitle = String(item.statusdesc ?? '').trim()
-    const groupKey = `${statusID}-${statusTitle}`
+    const statusID = Number(item.status ?? 0);
+    const statusTitle = String(item.statusdesc ?? '').trim();
+    const groupKey = `${statusID}-${statusTitle}`;
     if (!current || current.key !== groupKey) {
       current = {
         key: groupKey,
@@ -545,113 +559,116 @@ const groupedItems = computed(() => {
         color: getStatusBlockColor(item),
         rows: [],
         showHeader: statusTitle.length > 0,
-      }
-      groups.push(current)
+      };
+      groups.push(current);
     }
-    current.rows.push(item)
+    current.rows.push(item);
   }
-  return groups
-})
+  return groups;
+});
 const paperOptions = computed(() => {
-  const out: string[] = []
-  const seen = new Set<string>()
+  const out: string[] = [];
+  const seen = new Set<string>();
   const push = (raw: unknown) => {
-    const v = String(raw ?? '').trim()
-    if (!v || seen.has(v)) return
-    seen.add(v)
-    out.push(v)
-  }
-  paperNameDefaults.forEach(push)
-  presets.value.forEach((preset) => push(preset.papersize))
-  push(form.papersize)
-  return out
-})
-const rowOptions = Array.from({ length: 39 }, (_, i) => i + 1)
-const colOptions = Array.from({ length: 9 }, (_, i) => i + 1)
+    const v = String(raw ?? '').trim();
+    if (!v || seen.has(v)) return;
+    seen.add(v);
+    out.push(v);
+  };
+  paperNameDefaults.forEach(push);
+  presets.value.forEach(preset => push(preset.papersize));
+  push(form.papersize);
+  return out;
+});
+const rowOptions = Array.from({ length: 39 }, (_, i) => i + 1);
+const colOptions = Array.from({ length: 9 }, (_, i) => i + 1);
 
 type PreviewCell = {
-  key: string
-  kind: 'label' | 'skip' | 'blank'
-  row?: LabelPreview
-}
+  key: string;
+  kind: 'label' | 'skip' | 'blank';
+  row?: LabelPreview;
+};
 
 function getInputValue(event: Event) {
-  const target = event.target as HTMLInputElement | null
-  return target?.value ?? ''
+  const target = event.target as HTMLInputElement | null;
+  return target?.value ?? '';
 }
 
 function onSearchInput(event: Event) {
-  search.value = getInputValue(event)
-  void loadItems()
+  search.value = getInputValue(event);
+  void loadItems();
 }
 
 function toNumeric(input: string | number) {
-  const value = Number(input)
-  return Number.isFinite(value) ? value : 0
+  const value = Number(input);
+  return Number.isFinite(value) ? value : 0;
 }
 
 function clampNumber(value: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, value))
+  return Math.min(max, Math.max(min, value));
 }
 
 function getPaperSizeInfo(raw: unknown): PaperSizeInfo {
-  const key = String(raw ?? 'A4').trim().toUpperCase() || 'A4'
-  const named = namedPaperSizes[key]
+  const key =
+    String(raw ?? 'A4')
+      .trim()
+      .toUpperCase() || 'A4';
+  const named = namedPaperSizes[key];
   if (named) {
-    return { key, widthMm: named[0], heightMm: named[1] }
+    return { key, widthMm: named[0], heightMm: named[1] };
   }
 
-  const aMatch = key.match(/^A(\d{1,2})$/)
+  const aMatch = key.match(/^A(\d{1,2})$/);
   if (aMatch) {
-    const index = Number(aMatch[1])
-    const size = isoASizeList[index]
-    if (size) return { key, widthMm: size[0], heightMm: size[1] }
+    const index = Number(aMatch[1]);
+    const size = isoASizeList[index];
+    if (size) return { key, widthMm: size[0], heightMm: size[1] };
   }
 
-  const bMatch = key.match(/^(?:B|JIS_B)(\d{1,2})$/)
+  const bMatch = key.match(/^(?:B|JIS_B)(\d{1,2})$/);
   if (bMatch) {
-    const index = Number(bMatch[1])
-    const size = isoBSizeList[index]
-    if (size) return { key, widthMm: size[0], heightMm: size[1] }
+    const index = Number(bMatch[1]);
+    const size = isoBSizeList[index];
+    if (size) return { key, widthMm: size[0], heightMm: size[1] };
   }
 
-  return { key: 'A4', widthMm: 210, heightMm: 297 }
+  return { key: 'A4', widthMm: 210, heightMm: 297 };
 }
 
 function normalizeHexColor(raw: unknown) {
-  const value = String(raw ?? '').trim()
-  return /^#[0-9a-fA-F]{6}$/.test(value) ? value.toLowerCase() : ''
+  const value = String(raw ?? '').trim();
+  return /^#[0-9a-fA-F]{6}$/.test(value) ? value.toLowerCase() : '';
 }
 
 function getStatusBlockColor(item: LabelItem) {
-  const custom = normalizeHexColor(item.statuscolor)
-  if (custom) return custom
-  const title = String(item.statusdesc ?? '').trim()
-  return defaultStatusColorMap[title] ?? '#5b7aa4'
+  const custom = normalizeHexColor(item.statuscolor);
+  if (custom) return custom;
+  const title = String(item.statusdesc ?? '').trim();
+  return defaultStatusColorMap[title] ?? '#5b7aa4';
 }
 
 function formatItemIDType(item: LabelItem) {
-  const id = Number(item.id ?? 0)
-  const idText = Number.isFinite(id) && id > 0 ? String(Math.trunc(id)).padStart(4, '0') : '0000'
-  const typeText = String(item.itemtype ?? '').trim() || '-'
-  return `${idText}-${typeText}`
+  const id = Number(item.id ?? 0);
+  const idText = Number.isFinite(id) && id > 0 ? String(Math.trunc(id)).padStart(4, '0') : '0000';
+  const typeText = String(item.itemtype ?? '').trim() || '-';
+  return `${idText}-${typeText}`;
 }
 
 function formatItemText(item: LabelItem) {
-  const manufacturer = String(item.manufacturer ?? '').trim()
-  const model = String(item.model ?? '').trim()
-  const sn = String(item.sn ?? '').trim()
-  const label = String(item.label ?? '').trim()
-  const core = [manufacturer || '-', model || '-', sn || '-'].join('-')
-  return label ? `${core}-${label}` : core
+  const manufacturer = String(item.manufacturer ?? '').trim();
+  const model = String(item.model ?? '').trim();
+  const sn = String(item.sn ?? '').trim();
+  const label = String(item.label ?? '').trim();
+  const core = [manufacturer || '-', model || '-', sn || '-'].join('-');
+  return label ? `${core}-${label}` : core;
 }
 
 function formatPreviewID(id: number) {
-  return String(Math.max(0, Math.trunc(Number(id) || 0))).padStart(4, '0')
+  return String(Math.max(0, Math.trunc(Number(id) || 0))).padStart(4, '0');
 }
 
 function normalizePreviewHeaderText(raw: string) {
-  return raw.split('_NL_').join('\n').trim()
+  return raw.split('_NL_').join('\n').trim();
 }
 
 function escapeHtml(raw: unknown) {
@@ -660,22 +677,23 @@ function escapeHtml(raw: unknown) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
+    .replace(/'/g, '&#39;');
 }
 
 function resolvePreviewImageSrc(raw: string) {
-  const value = String(raw ?? '').trim()
-  if (!value) return ''
-  if (value.startsWith('/') || value.startsWith('data:') || /^https?:\/\//i.test(value)) return value
-  return `/${value.replace(/^\.?\//, '')}`
+  const value = String(raw ?? '').trim();
+  if (!value) return '';
+  if (value.startsWith('/') || value.startsWith('data:') || /^https?:\/\//i.test(value))
+    return value;
+  return `/${value.replace(/^\.?\//, '')}`;
 }
 
 async function attachPreviewQrImages(rows: LabelPreview[]) {
-  const cache = new Map<string, string>()
+  const cache = new Map<string, string>();
   return Promise.all(
-    rows.map(async (row) => {
-      const qrText = String(row.qrText ?? '').trim()
-      if (!qrText) return { ...row, qrImage: '' }
+    rows.map(async row => {
+      const qrText = String(row.qrText ?? '').trim();
+      if (!qrText) return { ...row, qrImage: '' };
       try {
         if (!cache.has(qrText)) {
           const svg = await QRCode.toString(qrText, {
@@ -686,86 +704,108 @@ async function attachPreviewQrImages(rows: LabelPreview[]) {
               dark: '#102a43',
               light: '#ffffff',
             },
-          })
-          cache.set(qrText, `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`)
+          });
+          cache.set(qrText, `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`);
         }
-        return { ...row, qrImage: cache.get(qrText) ?? '' }
+        return { ...row, qrImage: cache.get(qrText) ?? '' };
       } catch {
-        return { ...row, qrImage: '' }
+        return { ...row, qrImage: '' };
       }
-    }),
-  )
+    })
+  );
 }
 
 function buildPreviewDescription(row: LabelPreview) {
-  const manufacturer = String(row.manufacturer ?? '').trim()
-  const model = String(row.model ?? '').trim()
-  const text = [manufacturer, model].filter(Boolean).join('/')
-  return text.length > 37 ? `${text.slice(0, 37)}` : text
+  const manufacturer = String(row.manufacturer ?? '').trim();
+  const model = String(row.model ?? '').trim();
+  const text = [manufacturer, model].filter(Boolean).join('/');
+  return text.length > 37 ? `${text.slice(0, 37)}` : text;
 }
 
 function getPreviewIdLine(row: LabelPreview) {
-  if (form.wantnotext) return ''
-  return `ID:${formatPreviewID(row.id)}`
+  if (form.wantnotext) return '';
+  return `ID:${formatPreviewID(row.id)}`;
 }
 
 function getPreviewBodyLines(row: LabelPreview) {
-  if (form.wantnotext) return [] as string[]
+  if (form.wantnotext) return [] as string[];
 
-  const lines: string[] = []
-  const label = String(row.label ?? '').trim()
-  const sn = String(row.sn ?? '').trim()
-  const ipv4 = String(row.ipv4 ?? '').trim()
-  const ipv6 = String(row.ipv6 ?? '').trim()
-  const dnsName = String(row.dnsName ?? '').trim()
-  const desc = buildPreviewDescription(row)
+  const lines: string[] = [];
+  const label = String(row.label ?? '').trim();
+  const sn = String(row.sn ?? '').trim();
+  const ipv4 = String(row.ipv4 ?? '').trim();
+  const ipv6 = String(row.ipv6 ?? '').trim();
+  const dnsName = String(row.dnsName ?? '').trim();
+  const desc = buildPreviewDescription(row);
 
-  if (label) lines.push(`LBL:${label}`)
-  if (sn) lines.push(`SN:${sn}`)
-  if (desc) lines.push(desc)
-  if (ipv4) lines.push(`IPv4:${ipv4.slice(0, 15)}`)
-  if (ipv6) lines.push(`IPv6:${ipv6}`)
-  if (dnsName) lines.push(`HName:${dnsName}`)
-  return lines
+  if (label) lines.push(`LBL:${label}`);
+  if (sn) lines.push(`SN:${sn}`);
+  if (desc) lines.push(desc);
+  if (ipv4) lines.push(`IPv4:${ipv4.slice(0, 15)}`);
+  if (ipv6) lines.push(`IPv6:${ipv6}`);
+  if (dnsName) lines.push(`HName:${dnsName}`);
+  return lines;
 }
 
-const previewColumns = computed(() => clampNumber(Math.trunc(toNumeric(form.cols) || 1), 1, 9))
-const previewRowsPerPage = computed(() => clampNumber(Math.trunc(toNumeric(form.rows) || 1), 1, 60))
-const previewSkipCount = computed(() => Math.max(0, Math.trunc(toNumeric(form.labelskip) || 0)))
-const previewPageCapacity = computed(() => Math.max(1, previewColumns.value * previewRowsPerPage.value))
-const previewLabelWidthPx = computed(() => clampNumber(toNumeric(form.lwidth) * 3.2, 150, 360))
-const previewLabelHeightPx = computed(() => clampNumber(toNumeric(form.lheight) * 3.2, 96, 240))
-const previewPaperInfo = computed(() => getPaperSizeInfo(form.papersize))
+const previewColumns = computed(() => clampNumber(Math.trunc(toNumeric(form.cols) || 1), 1, 9));
+const previewRowsPerPage = computed(() =>
+  clampNumber(Math.trunc(toNumeric(form.rows) || 1), 1, 60)
+);
+const previewSkipCount = computed(() => Math.max(0, Math.trunc(toNumeric(form.labelskip) || 0)));
+const previewPageCapacity = computed(() =>
+  Math.max(1, previewColumns.value * previewRowsPerPage.value)
+);
+const previewLabelWidthPx = computed(() => clampNumber(toNumeric(form.lwidth) * 3.2, 150, 360));
+const previewLabelHeightPx = computed(() => clampNumber(toNumeric(form.lheight) * 3.2, 96, 240));
+const previewPaperInfo = computed(() => getPaperSizeInfo(form.papersize));
 const previewGapX = computed(() =>
-  clampNumber(Math.max(0, (toNumeric(form.hpitch) || 0) - (toNumeric(form.lwidth) || 0)) * 3.2, 0, 96),
-)
+  clampNumber(
+    Math.max(0, (toNumeric(form.hpitch) || 0) - (toNumeric(form.lwidth) || 0)) * 3.2,
+    0,
+    96
+  )
+);
 const previewGapY = computed(() =>
-  clampNumber(Math.max(0, (toNumeric(form.vpitch) || 0) - (toNumeric(form.lheight) || 0)) * 3.2, 0, 96),
-)
+  clampNumber(
+    Math.max(0, (toNumeric(form.vpitch) || 0) - (toNumeric(form.lheight) || 0)) * 3.2,
+    0,
+    96
+  )
+);
 const previewPaperScale = computed(() => {
-  const widthMm = previewPaperInfo.value.widthMm
-  const heightMm = previewPaperInfo.value.heightMm
-  let scale = 2.55
-  scale = Math.min(scale, 860 / widthMm, 1200 / heightMm)
-  scale = Math.max(scale, 260 / widthMm)
-  return scale
-})
+  const widthMm = previewPaperInfo.value.widthMm;
+  const heightMm = previewPaperInfo.value.heightMm;
+  let scale = 2.55;
+  scale = Math.min(scale, 860 / widthMm, 1200 / heightMm);
+  scale = Math.max(scale, 260 / widthMm);
+  return scale;
+});
 const previewSheetPaddingPx = computed(() => ({
   top: clampNumber((toNumeric(form.tmargin) || 0) * previewPaperScale.value, 0, 120),
   right: clampNumber((toNumeric(form.rmargin) || 0) * previewPaperScale.value, 0, 120),
   bottom: clampNumber((toNumeric(form.bmargin) || 0) * previewPaperScale.value, 0, 120),
   left: clampNumber((toNumeric(form.lmargin) || 0) * previewPaperScale.value, 0, 120),
-}))
-const previewPaperWidthPx = computed(() => previewPaperInfo.value.widthMm * previewPaperScale.value)
-const previewPaperHeightPx = computed(() => previewPaperInfo.value.heightMm * previewPaperScale.value)
+}));
+const previewPaperWidthPx = computed(
+  () => previewPaperInfo.value.widthMm * previewPaperScale.value
+);
+const previewPaperHeightPx = computed(
+  () => previewPaperInfo.value.heightMm * previewPaperScale.value
+);
 const previewGridWidthPx = computed(() => {
-  if (previewColumns.value <= 0) return 0
-  return previewColumns.value * previewLabelWidthPx.value + Math.max(0, previewColumns.value - 1) * previewGapX.value
-})
+  if (previewColumns.value <= 0) return 0;
+  return (
+    previewColumns.value * previewLabelWidthPx.value +
+    Math.max(0, previewColumns.value - 1) * previewGapX.value
+  );
+});
 const previewGridHeightPx = computed(() => {
-  if (previewRowsPerPage.value <= 0) return 0
-  return previewRowsPerPage.value * previewLabelHeightPx.value + Math.max(0, previewRowsPerPage.value - 1) * previewGapY.value
-})
+  if (previewRowsPerPage.value <= 0) return 0;
+  return (
+    previewRowsPerPage.value * previewLabelHeightPx.value +
+    Math.max(0, previewRowsPerPage.value - 1) * previewGapY.value
+  );
+});
 const previewSheetCanvasStyle = computed(() => ({
   width: `${Math.max(previewPaperWidthPx.value, previewGridWidthPx.value + previewSheetPaddingPx.value.left + previewSheetPaddingPx.value.right)}px`,
   minHeight: `${Math.max(previewPaperHeightPx.value, previewGridHeightPx.value + previewSheetPaddingPx.value.top + previewSheetPaddingPx.value.bottom)}px`,
@@ -773,22 +813,24 @@ const previewSheetCanvasStyle = computed(() => ({
   paddingRight: `${previewSheetPaddingPx.value.right}px`,
   paddingBottom: `${previewSheetPaddingPx.value.bottom}px`,
   paddingLeft: `${previewSheetPaddingPx.value.left}px`,
-}))
+}));
 const previewHeaderLines = computed(() =>
   form.wantheadertext
     ? normalizePreviewHeaderText(String(form.headertext ?? ''))
         .split('\n')
         .filter((line: string) => line.trim().length > 0)
-    : [],
-)
-const previewImageSrc = computed(() => (form.wantheaderimage ? resolvePreviewImageSrc(String(form.image ?? '')) : ''))
+    : []
+);
+const previewImageSrc = computed(() =>
+  form.wantheaderimage ? resolvePreviewImageSrc(String(form.image ?? '')) : ''
+);
 const previewGridStyle = computed(() => ({
   gridTemplateColumns: `repeat(${previewColumns.value}, ${previewLabelWidthPx.value}px)`,
   columnGap: `${previewGapX.value}px`,
   rowGap: `${previewGapY.value}px`,
-}))
+}));
 const previewCardVars = computed(() => {
-  const borderGray = clampNumber(Math.trunc(toNumeric(form.border) || 0), 0, 255)
+  const borderGray = clampNumber(Math.trunc(toNumeric(form.border) || 0), 0, 255);
   return {
     '--label-preview-width': `${previewLabelWidthPx.value}px`,
     '--label-preview-height': `${previewLabelHeightPx.value}px`,
@@ -800,87 +842,87 @@ const previewCardVars = computed(() => {
     '--label-preview-barcode-size': `${clampNumber(toNumeric(form.barcodesize) * 3.2, 36, 160)}px`,
     '--label-preview-image-width': `${clampNumber(toNumeric(form.imagewidth) * 3.2, 18, 96)}px`,
     '--label-preview-image-height': `${clampNumber(toNumeric(form.imageheight) * 3.2, 18, 96)}px`,
-  } as Record<string, string>
-})
+  } as Record<string, string>;
+});
 const previewPages = computed<PreviewCell[][]>(() => {
-  const cells: PreviewCell[] = []
+  const cells: PreviewCell[] = [];
   for (let index = 0; index < previewSkipCount.value; index += 1) {
-    cells.push({ key: `skip-${index}`, kind: 'skip' })
+    cells.push({ key: `skip-${index}`, kind: 'skip' });
   }
   for (const row of previewRows.value) {
-    cells.push({ key: `label-${row.id}`, kind: 'label', row })
+    cells.push({ key: `label-${row.id}`, kind: 'label', row });
   }
 
-  if (cells.length === 0) return []
+  if (cells.length === 0) return [];
 
-  const pages: PreviewCell[][] = []
-  const capacity = previewPageCapacity.value
+  const pages: PreviewCell[][] = [];
+  const capacity = previewPageCapacity.value;
   for (let offset = 0; offset < cells.length; offset += capacity) {
-    const page = cells.slice(offset, offset + capacity)
+    const page = cells.slice(offset, offset + capacity);
     while (page.length < capacity) {
-      page.push({ key: `blank-${pages.length}-${page.length}`, kind: 'blank' })
+      page.push({ key: `blank-${pages.length}-${page.length}`, kind: 'blank' });
     }
-    pages.push(page)
+    pages.push(page);
   }
-  return pages
-})
+  return pages;
+});
 
 function isChecked(id: number) {
-  return selectedIds.value.includes(id)
+  return selectedIds.value.includes(id);
 }
 
 function toggleItem(id: number) {
   if (isChecked(id)) {
-    selectedIds.value = selectedIds.value.filter((v) => v !== id)
-    return
+    selectedIds.value = selectedIds.value.filter(v => v !== id);
+    return;
   }
-  selectedIds.value = [...selectedIds.value, id]
+  selectedIds.value = [...selectedIds.value, id];
 }
 
 function toggleAll() {
   if (allChecked.value) {
-    selectedIds.value = []
-    return
+    selectedIds.value = [];
+    return;
   }
-  selectedIds.value = items.value.map((item) => item.id)
+  selectedIds.value = items.value.map(item => item.id);
 }
 
 function setOrderBy(next: 'type' | 'id' | 'id_desc' | 'model') {
-  if (orderBy.value === next) return
-  orderBy.value = next
-  void loadItems()
+  if (orderBy.value === next) return;
+  orderBy.value = next;
+  void loadItems();
 }
 
 function fillFormFromPreset(preset: LabelPreset) {
-  form.name = preset.name ?? ''
-  form.rows = toNumeric(preset.rows) || 8
-  form.cols = toNumeric(preset.cols) || 3
-  form.lwidth = String(preset.lwidth ?? '66')
-  form.lheight = String(preset.lheight ?? '35')
-  form.vpitch = String(preset.vpitch ?? '35')
-  form.hpitch = String(preset.hpitch ?? '70')
-  form.tmargin = String(preset.tmargin ?? '12')
-  form.bmargin = String(preset.bmargin ?? '12')
-  form.lmargin = String(preset.lmargin ?? '6')
-  form.rmargin = String(preset.rmargin ?? '6')
-  form.border = String(preset.border ?? '200')
-  form.padding = String(preset.padding ?? '1')
-  form.fontsize = String(preset.fontsize ?? '6')
-  form.headerfontsize = String(preset.headerfontsize ?? '6')
-  form.barcodesize = String(preset.barcodesize ?? '20')
-  form.idfontsize = String(preset.idfontsize ?? '7')
-  form.wantbarcode = Number(preset.wantbarcode) === 1
-  form.wantheadertext = Number(preset.wantheadertext) === 1
-  form.wantheaderimage = Number(preset.wantheaderimage) === 1
-  form.headertext = String(preset.headertext ?? '')
-  form.image = String(preset.image ?? 'images/itdb.png')
-  form.imagewidth = String(preset.imagewidth ?? '5')
-  form.imageheight = String(preset.imageheight ?? '5')
-  form.papersize = String(preset.papersize ?? 'A4')
-  form.qrtext = String(preset.qrtext ?? '')
-  form.wantnotext = Number(preset.wantnotext) === 1
-  form.wantraligntext = Number(preset.wantraligntext) === 1
-  form.labelskip = String(preset.labelskip ?? '0')
+  form.name = preset.name ?? '';
+  form.rows = toNumeric(preset.rows) || 8;
+  form.cols = toNumeric(preset.cols) || 3;
+  form.lwidth = String(preset.lwidth ?? '66');
+  form.lheight = String(preset.lheight ?? '35');
+  form.vpitch = String(preset.vpitch ?? '35');
+  form.hpitch = String(preset.hpitch ?? '70');
+  form.tmargin = String(preset.tmargin ?? '12');
+  form.bmargin = String(preset.bmargin ?? '12');
+  form.lmargin = String(preset.lmargin ?? '6');
+  form.rmargin = String(preset.rmargin ?? '6');
+  form.border = String(preset.border ?? '200');
+  form.padding = String(preset.padding ?? '1');
+  form.fontsize = String(preset.fontsize ?? '6');
+  form.headerfontsize = String(preset.headerfontsize ?? '6');
+  form.barcodesize = String(preset.barcodesize ?? '20');
+  form.idfontsize = String(preset.idfontsize ?? '7');
+  form.wantbarcode = Number(preset.wantbarcode) === 1;
+  form.wantheadertext = Number(preset.wantheadertext) === 1;
+  form.wantheaderimage = Number(preset.wantheaderimage) === 1;
+  form.headertext = String(preset.headertext ?? '');
+  form.image = String(preset.image ?? 'images/itdb.png');
+  form.imagewidth = String(preset.imagewidth ?? '5');
+  form.imageheight = String(preset.imageheight ?? '5');
+  form.papersize = String(preset.papersize ?? 'A4');
+  form.qrtext = String(preset.qrtext ?? '');
+  form.wantnotext = Number(preset.wantnotext) === 1;
+  form.wantraligntext = Number(preset.wantraligntext) === 1;
+  form.labelskip = String(preset.labelskip ?? '0');
 }
 
 function buildPresetPayload() {
@@ -913,15 +955,15 @@ function buildPresetPayload() {
     qrtext: String(form.qrtext ?? ''),
     wantnotext: form.wantnotext ? 1 : 0,
     wantraligntext: form.wantraligntext ? 1 : 0,
-  }
+  };
 }
 
 async function loadItems() {
-  const seq = ++loadItemsSeq
-  loadingItems.value = true
-  error.value = ''
-  success.value = ''
-  const selectedSet = new Set(selectedIds.value)
+  const seq = ++loadItemsSeq;
+  loadingItems.value = true;
+  error.value = '';
+  success.value = '';
+  const selectedSet = new Set(selectedIds.value);
 
   try {
     const { data } = await api.get<LabelItem[]>('/labels/items', {
@@ -930,110 +972,123 @@ async function loadItems() {
         orderBy: orderBy.value === 'type' ? undefined : orderBy.value,
         limit: 1500,
       },
-    })
-    if (seq !== loadItemsSeq) return
-    items.value = data ?? []
-    selectedIds.value = items.value.map((item) => item.id).filter((id) => selectedSet.has(id))
+    });
+    if (seq !== loadItemsSeq) return;
+    items.value = data ?? [];
+    selectedIds.value = items.value.map(item => item.id).filter(id => selectedSet.has(id));
   } catch (err: unknown) {
-    if (seq !== loadItemsSeq) return
-    error.value = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? '标签硬件加载失败'
+    if (seq !== loadItemsSeq) return;
+    error.value =
+      (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+      '标签硬件加载失败';
   } finally {
-    if (seq !== loadItemsSeq) return
-    loadingItems.value = false
+    if (seq !== loadItemsSeq) return;
+    loadingItems.value = false;
   }
 }
 
 async function loadPresets() {
-  loadingPresets.value = true
-  error.value = ''
+  loadingPresets.value = true;
+  error.value = '';
   try {
-    const { data } = await api.get<LabelPreset[]>('/labels/presets')
-    presets.value = data ?? []
+    const { data } = await api.get<LabelPreset[]>('/labels/presets');
+    presets.value = data ?? [];
     if (!form.name && presets.value.length > 0) {
-      fillFormFromPreset(presets.value[0] as LabelPreset)
+      fillFormFromPreset(presets.value[0] as LabelPreset);
     }
   } catch (err: unknown) {
-    error.value = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? '标签预设加载失败'
+    error.value =
+      (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+      '标签预设加载失败';
   } finally {
-    loadingPresets.value = false
+    loadingPresets.value = false;
   }
 }
 
 async function savePreset() {
-  if (!canWrite.value) return
-  const payload = buildPresetPayload()
+  if (!canWrite.value) return;
+  const payload = buildPresetPayload();
   if (!payload.name) {
-    error.value = '请先输入预设名称'
-    return
+    error.value = '请先输入预设名称';
+    return;
   }
 
-  savingPreset.value = true
-  error.value = ''
-  success.value = ''
+  savingPreset.value = true;
+  error.value = '';
+  success.value = '';
   try {
-    await api.post('/labels/presets', payload)
-    success.value = '预设保存成功'
-    await loadPresets()
+    await api.post('/labels/presets', payload);
+    success.value = '预设保存成功';
+    await loadPresets();
   } catch (err: unknown) {
-    error.value = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? '预设保存失败'
+    error.value =
+      (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+      '预设保存失败';
   } finally {
-    savingPreset.value = false
+    savingPreset.value = false;
   }
 }
 
 function requestDeletePreset(id: number) {
-  if (!canWrite.value) return
-  pendingDeletePresetId.value = id
-  confirmOpen.value = true
+  if (!canWrite.value) return;
+  pendingDeletePresetId.value = id;
+  confirmOpen.value = true;
 }
 
 function closeConfirm() {
-  if (deletingPreset.value) return
-  confirmOpen.value = false
-  pendingDeletePresetId.value = null
+  if (deletingPreset.value) return;
+  confirmOpen.value = false;
+  pendingDeletePresetId.value = null;
 }
 
 async function confirmDeletePreset() {
-  if (!canWrite.value || !pendingDeletePresetId.value) return
-  deletingPreset.value = true
-  const id = pendingDeletePresetId.value
-  error.value = ''
-  success.value = ''
+  if (!canWrite.value || !pendingDeletePresetId.value) return;
+  deletingPreset.value = true;
+  const id = pendingDeletePresetId.value;
+  error.value = '';
+  success.value = '';
   try {
-    await api.delete(`/labels/presets/${id}`)
-    confirmOpen.value = false
-    pendingDeletePresetId.value = null
-    success.value = '预设已删除'
-    await loadPresets()
+    await api.delete(`/labels/presets/${id}`);
+    confirmOpen.value = false;
+    pendingDeletePresetId.value = null;
+    success.value = '预设已删除';
+    await loadPresets();
   } catch (err: unknown) {
-    error.value = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? '预设删除失败'
+    error.value =
+      (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+      '预设删除失败';
   } finally {
-    deletingPreset.value = false
+    deletingPreset.value = false;
   }
 }
 
 async function loadPreview() {
   if (selectedIds.value.length === 0) {
-    previewRows.value = []
-    return
+    previewRows.value = [];
+    return;
   }
-  loadingPreview.value = true
-  error.value = ''
-  success.value = ''
+  loadingPreview.value = true;
+  error.value = '';
+  success.value = '';
   try {
     const { data } = await api.post<LabelPreview[]>('/labels/preview', {
       itemIds: selectedIds.value,
       qrPrefix: form.qrtext || '',
       headerText: form.headertext || '',
-    })
-    previewRows.value = await attachPreviewQrImages(data ?? [])
-    success.value = previewRows.value.length > 0 ? `已生成 ${previewRows.value.length} 条标签预览` : '当前选择没有可预览的标签数据'
-    await nextTick()
-    previewSectionRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    });
+    previewRows.value = await attachPreviewQrImages(data ?? []);
+    success.value =
+      previewRows.value.length > 0
+        ? `已生成 ${previewRows.value.length} 条标签预览`
+        : '当前选择没有可预览的标签数据';
+    await nextTick();
+    previewSectionRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (err: unknown) {
-    error.value = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? '标签预览加载失败'
+    error.value =
+      (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+      '标签预览加载失败';
   } finally {
-    loadingPreview.value = false
+    loadingPreview.value = false;
   }
 }
 
@@ -1050,12 +1105,12 @@ function buildPrintLabelHtml(row: LabelPreview) {
         ${
           previewHeaderLines.value.length > 0
             ? `<div class="label-header-text">${previewHeaderLines.value
-                .map((line) => `<span>${escapeHtml(line)}</span>`)
+                .map(line => `<span>${escapeHtml(line)}</span>`)
                 .join('')}</div>`
             : ''
         }
       </div>`
-      : ''
+      : '';
 
   const qrHtml = form.wantbarcode
     ? `
@@ -1068,7 +1123,7 @@ function buildPrintLabelHtml(row: LabelPreview) {
           }
         </div>
       </div>`
-    : ''
+    : '';
 
   const bodyHtml = form.wantnotext
     ? ''
@@ -1076,9 +1131,9 @@ function buildPrintLabelHtml(row: LabelPreview) {
       <div class="label-text">
         <div class="label-id">${escapeHtml(getPreviewIdLine(row))}</div>
         ${getPreviewBodyLines(row)
-          .map((line) => `<div class="label-line">${escapeHtml(line)}</div>`)
+          .map(line => `<div class="label-line">${escapeHtml(line)}</div>`)
           .join('')}
-      </div>`
+      </div>`;
 
   return `
     <article class="label-card${form.wantbarcode && form.wantraligntext ? ' is-right-text' : ''}${form.wantnotext ? ' is-no-text' : ''}">
@@ -1088,32 +1143,33 @@ function buildPrintLabelHtml(row: LabelPreview) {
         ${bodyHtml}
       </div>
     </article>
-  `
+  `;
 }
 
 function buildPrintDocumentHtml() {
-  const paper = previewPaperInfo.value
-  const borderGray = clampNumber(Math.trunc(toNumeric(form.border) || 0), 0, 255)
-  const gapX = Math.max(0, (toNumeric(form.hpitch) || 0) - (toNumeric(form.lwidth) || 0))
-  const gapY = Math.max(0, (toNumeric(form.vpitch) || 0) - (toNumeric(form.lheight) || 0))
+  const paper = previewPaperInfo.value;
+  const borderGray = clampNumber(Math.trunc(toNumeric(form.border) || 0), 0, 255);
+  const gapX = Math.max(0, (toNumeric(form.hpitch) || 0) - (toNumeric(form.lwidth) || 0));
+  const gapY = Math.max(0, (toNumeric(form.vpitch) || 0) - (toNumeric(form.lheight) || 0));
   const previewHtml = previewPages.value
     .map(
-      (page) => `
+      page => `
         <section class="sheet">
           <div class="grid">
             ${page
-              .map((cell) => {
-                if (cell.kind === 'skip') return '<div class="skip-cell">跳过</div>'
-                if (cell.kind === 'blank') return '<div class="blank-cell" aria-hidden="true"></div>'
-                if (cell.kind === 'label' && cell.row) return buildPrintLabelHtml(cell.row)
-                return '<div class="blank-cell" aria-hidden="true"></div>'
+              .map(cell => {
+                if (cell.kind === 'skip') return '<div class="skip-cell">跳过</div>';
+                if (cell.kind === 'blank')
+                  return '<div class="blank-cell" aria-hidden="true"></div>';
+                if (cell.kind === 'label' && cell.row) return buildPrintLabelHtml(cell.row);
+                return '<div class="blank-cell" aria-hidden="true"></div>';
               })
               .join('')}
           </div>
         </section>
-      `,
+      `
     )
-    .join('')
+    .join('');
 
   return `<!doctype html>
 <html lang="zh-CN">
@@ -1329,41 +1385,43 @@ function buildPrintDocumentHtml() {
     })
   <\/script>
 </body>
-</html>`
+</html>`;
 }
 
 async function printPreview() {
-  if (previewPages.value.length === 0 || printingPreview.value) return
-  const popup = window.open('', '_blank')
+  if (previewPages.value.length === 0 || printingPreview.value) return;
+  const popup = window.open('', '_blank');
   if (!popup) {
-    error.value = '浏览器拦截了打印窗口，请允许弹出窗口后重试'
-    return
+    error.value = '浏览器拦截了打印窗口，请允许弹出窗口后重试';
+    return;
   }
 
-  popup.document.open()
-  popup.document.write(`<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>生成中</title></head><body style="font-family:'Noto Sans SC',sans-serif;padding:24px;color:#1f2937;">正在生成打印页，请稍候...</body></html>`)
-  popup.document.close()
+  popup.document.open();
+  popup.document.write(
+    `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>生成中</title></head><body style="font-family:'Noto Sans SC',sans-serif;padding:24px;color:#1f2937;">正在生成打印页，请稍候...</body></html>`
+  );
+  popup.document.close();
 
-  printingPreview.value = true
-  error.value = ''
+  printingPreview.value = true;
+  error.value = '';
   try {
-    if (form.wantbarcode && previewRows.value.some((row) => row.qrText && !row.qrImage)) {
-      previewRows.value = await attachPreviewQrImages(previewRows.value)
+    if (form.wantbarcode && previewRows.value.some(row => row.qrText && !row.qrImage)) {
+      previewRows.value = await attachPreviewQrImages(previewRows.value);
     }
-    const html = buildPrintDocumentHtml()
-    popup.document.open()
-    popup.document.write(html)
-    popup.document.close()
+    const html = buildPrintDocumentHtml();
+    popup.document.open();
+    popup.document.write(html);
+    popup.document.close();
   } catch {
-    popup.close()
-    error.value = '打印页生成失败'
+    popup.close();
+    error.value = '打印页生成失败';
   } finally {
-    printingPreview.value = false
+    printingPreview.value = false;
   }
 }
 
-loadItems()
-loadPresets()
+loadItems();
+loadPresets();
 </script>
 
 <template>
@@ -1427,7 +1485,12 @@ loadPresets()
                 </tr>
                 <tr v-for="item in group.rows" :key="item.id" @click="toggleItem(item.id)">
                   <td>
-                    <input type="checkbox" :checked="isChecked(item.id)" @click.stop @change="toggleItem(item.id)" />
+                    <input
+                      type="checkbox"
+                      :checked="isChecked(item.id)"
+                      @click.stop
+                      @change="toggleItem(item.id)"
+                    />
                   </td>
                   <td class="mono">{{ formatItemIDType(item) }}</td>
                   <td class="mono label-text-cell">{{ formatItemText(item) }}</td>
@@ -1441,7 +1504,12 @@ loadPresets()
         </div>
 
         <div class="labels-main-actions">
-          <button type="button" class="make-label-btn" :disabled="selectedCount === 0 || loadingPreview" @click="loadPreview">
+          <button
+            type="button"
+            class="make-label-btn"
+            :disabled="selectedCount === 0 || loadingPreview"
+            @click="loadPreview"
+          >
             {{ loadingPreview ? '生成中...' : '生成标签预览' }}
           </button>
           <button
@@ -1469,7 +1537,9 @@ loadPresets()
             <col class="label-props-col-value" />
             <col class="label-props-col-presets" />
           </colgroup>
-          <caption>标签属性：</caption>
+          <caption>
+            标签属性：
+          </caption>
           <thead>
             <tr>
               <th>属性</th>
@@ -1490,7 +1560,9 @@ loadPresets()
                       <td class="prop-key">纸张大小：</td>
                       <td>
                         <select v-model="form.papersize">
-                          <option v-for="paper in paperOptions" :key="paper" :value="paper">{{ paper }}</option>
+                          <option v-for="paper in paperOptions" :key="paper" :value="paper">
+                            {{ paper }}
+                          </option>
                         </select>
                       </td>
                     </tr>
@@ -1498,7 +1570,9 @@ loadPresets()
                       <td class="prop-key">行：</td>
                       <td>
                         <select v-model.number="form.rows">
-                          <option v-for="value in rowOptions" :key="`row-${value}`" :value="value">{{ value }}</option>
+                          <option v-for="value in rowOptions" :key="`row-${value}`" :value="value">
+                            {{ value }}
+                          </option>
                         </select>
                       </td>
                     </tr>
@@ -1506,7 +1580,9 @@ loadPresets()
                       <td class="prop-key">列：</td>
                       <td>
                         <select v-model.number="form.cols">
-                          <option v-for="value in colOptions" :key="`col-${value}`" :value="value">{{ value }}</option>
+                          <option v-for="value in colOptions" :key="`col-${value}`" :value="value">
+                            {{ value }}
+                          </option>
                         </select>
                       </td>
                     </tr>
@@ -1739,7 +1815,12 @@ loadPresets()
                     <p v-if="loadingPresets" class="muted-text">预设加载中...</p>
                     <template v-else>
                       <div v-for="preset in presets" :key="preset.id" class="preset-row">
-                        <a href="#" class="preset-link" @click.prevent="fillFormFromPreset(preset)">{{ preset.name }}</a>
+                        <a
+                          href="#"
+                          class="preset-link"
+                          @click.prevent="fillFormFromPreset(preset)"
+                          >{{ preset.name }}</a
+                        >
                         <button
                           v-if="canWrite"
                           class="preset-delete-btn"
@@ -1747,7 +1828,30 @@ loadPresets()
                           title="删除预设"
                           @click="requestDeletePreset(preset.id)"
                         >
-                          <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;color:#c0392b;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;display:block;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>
+                          <span
+                            style="
+                              display: inline-flex;
+                              align-items: center;
+                              justify-content: center;
+                              width: 18px;
+                              height: 18px;
+                              color: #c0392b;
+                            "
+                            ><svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              style="width: 18px; height: 18px; display: block"
+                            >
+                              <polyline points="3 6 5 6 21 6" />
+                              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                              <path d="M10 11v6M14 11v6" />
+                              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" /></svg
+                          ></span>
                         </button>
                       </div>
                       <p v-if="presets.length === 0" class="muted-text">暂无预设</p>
@@ -1755,11 +1859,21 @@ loadPresets()
                   </div>
 
                   <div class="presets-tools-wrap">
-                    <button v-if="canWrite" class="save-preset-btn" type="button" :disabled="savingPreset" @click="savePreset">
+                    <button
+                      v-if="canWrite"
+                      class="save-preset-btn"
+                      type="button"
+                      :disabled="savingPreset"
+                      @click="savePreset"
+                    >
                       {{ savingPreset ? '保存中...' : '保存为新预设' }}
                     </button>
 
-                    <img class="label-guide-image" src="/images/labelinfo.jpg" alt="标签参数示意图" />
+                    <img
+                      class="label-guide-image"
+                      src="/images/labelinfo.jpg"
+                      alt="标签参数示意图"
+                    />
                   </div>
                 </div>
               </td>
@@ -1772,58 +1886,100 @@ loadPresets()
         <div class="labels-preview-head">
           <h3>预览结果（{{ previewRows.length }}）</h3>
           <div class="labels-preview-meta">
-            <span>{{ previewPaperInfo.key }} {{ previewPaperInfo.widthMm }}×{{ previewPaperInfo.heightMm }} mm</span>
+            <span
+              >{{ previewPaperInfo.key }} {{ previewPaperInfo.widthMm }}×{{
+                previewPaperInfo.heightMm
+              }}
+              mm</span
+            >
             <span>{{ previewColumns }} 列 × {{ previewRowsPerPage }} 行</span>
             <span>跳过 {{ previewSkipCount }} 个</span>
-            <span>水平间距 {{ previewGapX.toFixed(0) }} px / 垂直间距 {{ previewGapY.toFixed(0) }} px</span>
+            <span
+              >水平间距 {{ previewGapX.toFixed(0) }} px / 垂直间距
+              {{ previewGapY.toFixed(0) }} px</span
+            >
             <span>{{ form.name.trim() || '未命名预设' }}</span>
           </div>
         </div>
 
-        <div v-if="previewPages.length === 0" class="labels-preview-empty muted-text">请选择硬件后生成预览</div>
+        <div v-if="previewPages.length === 0" class="labels-preview-empty muted-text">
+          请选择硬件后生成预览
+        </div>
         <div v-else class="labels-preview-pages">
-          <section v-for="(page, pageIndex) in previewPages" :key="`preview-page-${pageIndex}`" class="labels-preview-sheet">
+          <section
+            v-for="(page, pageIndex) in previewPages"
+            :key="`preview-page-${pageIndex}`"
+            class="labels-preview-sheet"
+          >
             <header>第 {{ pageIndex + 1 }} 页</header>
             <div class="labels-preview-sheet-scroller">
               <div class="labels-preview-sheet-canvas" :style="previewSheetCanvasStyle">
                 <div class="labels-preview-grid" :style="previewGridStyle">
-                <template v-for="cell in page" :key="cell.key">
-                  <div v-if="cell.kind === 'skip'" class="labels-preview-skip" :style="previewCardVars">跳过</div>
-                  <div v-else-if="cell.kind === 'blank'" class="labels-preview-blank" :style="previewCardVars" aria-hidden="true" />
-                  <article
-                    v-else-if="cell.kind === 'label' && cell.row"
-                    class="labels-preview-card"
-                    :class="{ 'is-right-text': form.wantbarcode && form.wantraligntext, 'is-no-text': form.wantnotext }"
-                    :style="previewCardVars"
-                  >
-                    <div v-if="previewImageSrc || previewHeaderLines.length > 0" class="labels-preview-header">
-                      <img v-if="previewImageSrc" :src="previewImageSrc" alt="标签页头图片" />
-                      <div v-if="previewHeaderLines.length > 0" class="labels-preview-header-text">
-                        <span v-for="(line, lineIndex) in previewHeaderLines" :key="`${cell.row.id}-header-${lineIndex}`">{{ line }}</span>
-                      </div>
+                  <template v-for="cell in page" :key="cell.key">
+                    <div
+                      v-if="cell.kind === 'skip'"
+                      class="labels-preview-skip"
+                      :style="previewCardVars"
+                    >
+                      跳过
                     </div>
-
-                    <div class="labels-preview-body">
-                      <div v-if="form.wantbarcode" class="labels-preview-barcode">
-                        <div class="labels-preview-barcode-code">
-                          <img v-if="cell.row.qrImage" :src="cell.row.qrImage" :alt="cell.row.qrText || '二维码'" />
-                          <strong v-else>QR</strong>
-                        </div>
-                        <small v-if="!form.wantnotext">{{ cell.row.qrText || '-' }}</small>
-                      </div>
-                      <div v-if="!form.wantnotext" class="labels-preview-text">
-                        <div class="labels-preview-id">{{ getPreviewIdLine(cell.row) }}</div>
+                    <div
+                      v-else-if="cell.kind === 'blank'"
+                      class="labels-preview-blank"
+                      :style="previewCardVars"
+                      aria-hidden="true"
+                    />
+                    <article
+                      v-else-if="cell.kind === 'label' && cell.row"
+                      class="labels-preview-card"
+                      :class="{
+                        'is-right-text': form.wantbarcode && form.wantraligntext,
+                        'is-no-text': form.wantnotext,
+                      }"
+                      :style="previewCardVars"
+                    >
+                      <div
+                        v-if="previewImageSrc || previewHeaderLines.length > 0"
+                        class="labels-preview-header"
+                      >
+                        <img v-if="previewImageSrc" :src="previewImageSrc" alt="标签页头图片" />
                         <div
-                          v-for="(line, lineIndex) in getPreviewBodyLines(cell.row)"
-                          :key="`${cell.row.id}-line-${lineIndex}`"
-                          class="labels-preview-line"
+                          v-if="previewHeaderLines.length > 0"
+                          class="labels-preview-header-text"
                         >
-                          {{ line }}
+                          <span
+                            v-for="(line, lineIndex) in previewHeaderLines"
+                            :key="`${cell.row.id}-header-${lineIndex}`"
+                            >{{ line }}</span
+                          >
                         </div>
                       </div>
-                    </div>
-                  </article>
-                </template>
+
+                      <div class="labels-preview-body">
+                        <div v-if="form.wantbarcode" class="labels-preview-barcode">
+                          <div class="labels-preview-barcode-code">
+                            <img
+                              v-if="cell.row.qrImage"
+                              :src="cell.row.qrImage"
+                              :alt="cell.row.qrText || '二维码'"
+                            />
+                            <strong v-else>QR</strong>
+                          </div>
+                          <small v-if="!form.wantnotext">{{ cell.row.qrText || '-' }}</small>
+                        </div>
+                        <div v-if="!form.wantnotext" class="labels-preview-text">
+                          <div class="labels-preview-id">{{ getPreviewIdLine(cell.row) }}</div>
+                          <div
+                            v-for="(line, lineIndex) in getPreviewBodyLines(cell.row)"
+                            :key="`${cell.row.id}-line-${lineIndex}`"
+                            class="labels-preview-line"
+                          >
+                            {{ line }}
+                          </div>
+                        </div>
+                      </div>
+                    </article>
+                  </template>
                 </div>
               </div>
             </div>
@@ -1836,15 +1992,35 @@ loadPresets()
       <section class="drawer modal-narrow" role="dialog" aria-modal="true">
         <div class="drawer-header">
           <h3>删除确认</h3>
-          <button class="dialog-close-btn quick-tip" type="button" aria-label="关闭" data-quick-tip="关闭" @click="closeConfirm">×</button>
+          <button
+            class="dialog-close-btn quick-tip"
+            type="button"
+            aria-label="关闭"
+            data-quick-tip="关闭"
+            @click="closeConfirm"
+          >
+            ×
+          </button>
         </div>
         <div class="drawer-form">
           <p style="text-align: center">{{ confirmMessage }}</p>
           <div class="inline-actions">
-            <button class="danger" type="button" :disabled="deletingPreset" @click="confirmDeletePreset">
+            <button
+              class="danger"
+              type="button"
+              :disabled="deletingPreset"
+              @click="confirmDeletePreset"
+            >
               {{ deletingPreset ? '删除中...' : '确认删除' }}
             </button>
-            <button class="ghost-btn" type="button" :disabled="deletingPreset" @click="closeConfirm">取消</button>
+            <button
+              class="ghost-btn"
+              type="button"
+              :disabled="deletingPreset"
+              @click="closeConfirm"
+            >
+              取消
+            </button>
           </div>
         </div>
       </section>
@@ -2230,7 +2406,13 @@ loadPresets()
   border: 1px dashed #c6d4e2;
   background:
     linear-gradient(135deg, rgba(231, 239, 248, 0.9), rgba(246, 249, 252, 0.95)),
-    repeating-linear-gradient(135deg, rgba(142, 164, 188, 0.18) 0, rgba(142, 164, 188, 0.18) 8px, transparent 8px, transparent 16px);
+    repeating-linear-gradient(
+      135deg,
+      rgba(142, 164, 188, 0.18) 0,
+      rgba(142, 164, 188, 0.18) 8px,
+      transparent 8px,
+      transparent 16px
+    );
   color: #66809a;
   font-weight: 700;
   letter-spacing: 0.08em;

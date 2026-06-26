@@ -1,30 +1,30 @@
 ﻿<script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import api from '../api/client'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import api from '../api/client';
 
 type ReportMeta = {
-  name: string
-  description: string
-  chartType?: string
-}
+  name: string;
+  description: string;
+  chartType?: string;
+};
 
 type ReportResult = {
-  meta: ReportMeta
-  rows: Array<Record<string, unknown>>
-  chart: Array<{ x: string; y: number }>
-}
+  meta: ReportMeta;
+  rows: Array<Record<string, unknown>>;
+  chart: Array<{ x: string; y: number }>;
+};
 
-const reports = ref<ReportMeta[]>([])
-const active = ref('')
-const rows = ref<Array<Record<string, unknown>>>([])
-const chart = ref<Array<{ x: string; y: number }>>([])
-const loading = ref(false)
-const error = ref('')
-const keyword = ref('')
-const router = useRouter()
-const reportPickerOpen = ref(false)
-const reportPickerRoot = ref<HTMLElement | null>(null)
+const reports = ref<ReportMeta[]>([]);
+const active = ref('');
+const rows = ref<Array<Record<string, unknown>>>([]);
+const chart = ref<Array<{ x: string; y: number }>>([]);
+const loading = ref(false);
+const error = ref('');
+const keyword = ref('');
+const router = useRouter();
+const reportPickerOpen = ref(false);
+const reportPickerRoot = ref<HTMLElement | null>(null);
 
 const reportTitleMap: Record<string, string> = {
   itemperagent: '每个厂商的硬件数量(代理)',
@@ -39,7 +39,7 @@ const reportTitleMap: Record<string, string> = {
   nolocation: '无地点的硬件',
   depreciation3: '硬件折旧价值 3 年',
   depreciation5: '硬件折旧价值 5 年',
-}
+};
 
 const reportColumnOrderMap: Record<string, string[]> = {
   itemperagent: ['totalcount', 'Agent', 'ID'],
@@ -48,13 +48,40 @@ const reportColumnOrderMap: Record<string, string[]> = {
   itemsperlocation: ['totalcount', 'Location'],
   percsupitems: ['Type', 'Items'],
   itemlistperlocation: ['ID', 'type', 'manufacturer', 'model', 'dnsname', 'Location'],
-  itemsendwarranty: ['ID', 'ipv4', 'type', 'manufacturer', 'model', 'dnsname', 'label', 'RemainingDays'],
+  itemsendwarranty: [
+    'ID',
+    'ipv4',
+    'type',
+    'manufacturer',
+    'model',
+    'dnsname',
+    'label',
+    'RemainingDays',
+  ],
   allips: ['ID', 'ipv4', 'ipv6', 'type', 'manufacturer', 'model', 'dnsname', 'label'],
   noinvoice: ['ID', 'type', 'manufacturer', 'model', 'PurchaseDate'],
   nolocation: ['ID', 'type', 'manufacturer', 'model'],
-  depreciation3: ['ID', 'type', 'manufacturer', 'model', 'PurchaseDate', 'PurchasePrice', 'Months', 'CurrentValue'],
-  depreciation5: ['ID', 'type', 'manufacturer', 'model', 'PurchaseDate', 'PurchasePrice', 'Months', 'CurrentValue'],
-}
+  depreciation3: [
+    'ID',
+    'type',
+    'manufacturer',
+    'model',
+    'PurchaseDate',
+    'PurchasePrice',
+    'Months',
+    'CurrentValue',
+  ],
+  depreciation5: [
+    'ID',
+    'type',
+    'manufacturer',
+    'model',
+    'PurchaseDate',
+    'PurchasePrice',
+    'Months',
+    'CurrentValue',
+  ],
+};
 
 const reportColumnLabelMap: Record<string, string> = {
   ID: '编号',
@@ -75,7 +102,7 @@ const reportColumnLabelMap: Record<string, string> = {
   PurchasePrice: '采购价格',
   Months: '月数',
   CurrentValue: '当前价值',
-}
+};
 
 const reportEditTargetMap: Record<string, 'items' | 'agents'> = {
   itemperagent: 'agents',
@@ -88,129 +115,139 @@ const reportEditTargetMap: Record<string, 'items' | 'agents'> = {
   nolocation: 'items',
   depreciation3: 'items',
   depreciation5: 'items',
-}
+};
 
-const activeMeta = computed(() => reports.value.find((r) => r.name === active.value))
+const activeMeta = computed(() => reports.value.find(r => r.name === active.value));
 const activeReportTitle = computed(() => {
-  if (!active.value) return ''
-  return reportTitleMap[active.value] ?? activeMeta.value?.description ?? active.value
-})
+  if (!active.value) return '';
+  return reportTitleMap[active.value] ?? activeMeta.value?.description ?? active.value;
+});
 const columns = computed(() => {
-  const rowKeys = Object.keys(rows.value[0] ?? {})
-  const preferred = reportColumnOrderMap[active.value] ?? rowKeys
-  const ordered = preferred.filter((key) => rowKeys.includes(key))
-  const remaining = rowKeys.filter((key) => !ordered.includes(key))
-  return [...ordered, ...remaining]
-})
+  const rowKeys = Object.keys(rows.value[0] ?? {});
+  const preferred = reportColumnOrderMap[active.value] ?? rowKeys;
+  const ordered = preferred.filter(key => rowKeys.includes(key));
+  const remaining = rowKeys.filter(key => !ordered.includes(key));
+  return [...ordered, ...remaining];
+});
 
 const filteredRows = computed(() => {
-  const q = keyword.value.trim().toLowerCase()
-  if (!q) return rows.value
-  return rows.value.filter((row) =>
-    columns.value.some((key) => String(row[key] ?? '').toLowerCase().includes(q)),
-  )
-})
+  const q = keyword.value.trim().toLowerCase();
+  if (!q) return rows.value;
+  return rows.value.filter(row =>
+    columns.value.some(key =>
+      String(row[key] ?? '')
+        .toLowerCase()
+        .includes(q)
+    )
+  );
+});
 
-const tableRows = computed(() => filteredRows.value.map((row, idx) => ({ index: idx + 1, row })))
+const tableRows = computed(() => filteredRows.value.map((row, idx) => ({ index: idx + 1, row })));
 
 function columnDisplayName(key: string) {
-  return reportColumnLabelMap[key] ?? key
+  return reportColumnLabelMap[key] ?? key;
 }
 
 function isIDColumn(key: string) {
-  return key.trim().toLowerCase() === 'id'
+  return key.trim().toLowerCase() === 'id';
 }
 
 function parsePositiveID(value: unknown) {
-  const id = Number.parseInt(String(value ?? '').trim(), 10)
-  return Number.isFinite(id) && id > 0 ? id : 0
+  const id = Number.parseInt(String(value ?? '').trim(), 10);
+  return Number.isFinite(id) && id > 0 ? id : 0;
 }
 
 function canOpenRowEditor(key: string, row: Record<string, unknown>) {
-  if (!isIDColumn(key)) return false
-  if (!reportEditTargetMap[active.value]) return false
-  return parsePositiveID(row[key]) > 0
+  if (!isIDColumn(key)) return false;
+  if (!reportEditTargetMap[active.value]) return false;
+  return parsePositiveID(row[key]) > 0;
 }
 
 function openRowEditorByID(value: unknown) {
-  const target = reportEditTargetMap[active.value]
-  const id = parsePositiveID(value)
-  if (!target || !id) return
-  void router.push({ path: `/resources/${target}`, query: { edit: String(id) } })
+  const target = reportEditTargetMap[active.value];
+  const id = parsePositiveID(value);
+  if (!target || !id) return;
+  void router.push({ path: `/resources/${target}`, query: { edit: String(id) } });
 }
 
 function reportDisplayName(report: ReportMeta) {
-  return reportTitleMap[report.name] ?? report.description ?? report.name
+  return reportTitleMap[report.name] ?? report.description ?? report.name;
 }
 
 function toggleReportPicker() {
-  reportPickerOpen.value = !reportPickerOpen.value
+  reportPickerOpen.value = !reportPickerOpen.value;
 }
 
 function selectReport(name: string) {
-  reportPickerOpen.value = false
-  if (!name) return
+  reportPickerOpen.value = false;
+  if (!name) return;
   if (active.value === name) {
-    keyword.value = ''
-    void loadReport()
-    return
+    keyword.value = '';
+    void loadReport();
+    return;
   }
-  active.value = name
+  active.value = name;
 }
 
 function onReportPickerPointerDown(event: PointerEvent) {
-  const root = reportPickerRoot.value
-  const target = event.target as Node | null
+  const root = reportPickerRoot.value;
+  const target = event.target as Node | null;
   if (root && target && !root.contains(target)) {
-    reportPickerOpen.value = false
+    reportPickerOpen.value = false;
   }
 }
 
 async function loadReports() {
-  const { data } = await api.get<ReportMeta[]>('/reports')
-  reports.value = data
+  const { data } = await api.get<ReportMeta[]>('/reports');
+  reports.value = data;
   if (!active.value && reports.value.length > 0) {
-    active.value = reports.value[0]?.name ?? ''
+    active.value = reports.value[0]?.name ?? '';
   }
 }
 
 async function loadReport() {
   if (!active.value) {
-    rows.value = []
-    chart.value = []
-    return
+    rows.value = [];
+    chart.value = [];
+    return;
   }
-  loading.value = true
-  error.value = ''
+  loading.value = true;
+  error.value = '';
   try {
-    const { data } = await api.get<ReportResult>(`/reports/${active.value}`, { params: { limit: 1000 } })
-    rows.value = data.rows ?? []
-    chart.value = data.chart ?? []
+    const { data } = await api.get<ReportResult>(`/reports/${active.value}`, {
+      params: { limit: 1000 },
+    });
+    rows.value = data.rows ?? [];
+    chart.value = data.chart ?? [];
   } catch (err: unknown) {
-    error.value = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? '报表加载失败'
+    error.value =
+      (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+      '报表加载失败';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 watch(active, () => {
-  keyword.value = ''
-  void loadReport()
-})
+  keyword.value = '';
+  void loadReport();
+});
 
 onMounted(async () => {
-  document.addEventListener('pointerdown', onReportPickerPointerDown)
+  document.addEventListener('pointerdown', onReportPickerPointerDown);
   try {
-    await loadReports()
-    await loadReport()
+    await loadReports();
+    await loadReport();
   } catch (err: unknown) {
-    error.value = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? '报表目录加载失败'
+    error.value =
+      (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+      '报表目录加载失败';
   }
-})
+});
 
 onBeforeUnmount(() => {
-  document.removeEventListener('pointerdown', onReportPickerPointerDown)
-})
+  document.removeEventListener('pointerdown', onReportPickerPointerDown);
+});
 </script>
 
 <template>
@@ -221,7 +258,12 @@ onBeforeUnmount(() => {
         <div class="search-inline">
           <span class="search-label">选择报告</span>
           <div ref="reportPickerRoot" class="report-picker">
-            <button type="button" class="report-picker-btn" :aria-expanded="reportPickerOpen ? 'true' : 'false'" @click="toggleReportPicker">
+            <button
+              type="button"
+              class="report-picker-btn"
+              :aria-expanded="reportPickerOpen ? 'true' : 'false'"
+              @click="toggleReportPicker"
+            >
               <span>{{ activeReportTitle || '请选择报告' }}</span>
               <span class="report-picker-caret">{{ reportPickerOpen ? '▲' : '▼' }}</span>
             </button>
@@ -242,7 +284,12 @@ onBeforeUnmount(() => {
         </div>
         <div class="search-inline">
           <span class="search-label">查询</span>
-          <input v-model.trim="keyword" class="search-input" type="text" placeholder="输入关键词过滤当前报告" />
+          <input
+            v-model.trim="keyword"
+            class="search-input"
+            type="text"
+            placeholder="输入关键词过滤当前报告"
+          />
         </div>
         <button class="ghost-btn" @click="loadReport">刷新</button>
       </div>

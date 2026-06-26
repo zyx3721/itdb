@@ -1,20 +1,20 @@
 ﻿<script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
-import api from '../api/client'
-import { useAuthStore } from '../stores/auth'
-import { useNoticeStore } from '../stores/notice'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router';
+import api from '../api/client';
+import { useAuthStore } from '../stores/auth';
+import { useNoticeStore } from '../stores/notice';
 
-const route = useRoute()
-const router = useRouter()
-const auth = useAuthStore()
-const notice = useNoticeStore()
+const route = useRoute();
+const router = useRouter();
+const auth = useAuthStore();
+const notice = useNoticeStore();
 
 type ViewHistoryEntry = {
-  id: number
-  url: string
-  description: string
-}
+  id: number;
+  url: string;
+  description: string;
+};
 
 const recentHistoryResourceTitleMap: Record<string, string> = {
   items: '硬件',
@@ -26,7 +26,7 @@ const recentHistoryResourceTitleMap: Record<string, string> = {
   locations: '地点',
   users: '用户',
   racks: '机架',
-}
+};
 
 const recentHistoryDictionaryTitleMap: Record<string, string> = {
   itemtypes: '硬件类型',
@@ -35,7 +35,7 @@ const recentHistoryDictionaryTitleMap: Record<string, string> = {
   filetypes: '文件类型',
   dpttypes: '所属部门',
   tags: '标记',
-}
+};
 
 const mainNavItems = [
   { to: '/dashboard', label: '首页' },
@@ -48,7 +48,7 @@ const mainNavItems = [
   { to: '/resources/locations', label: '地点' },
   { to: '/resources/users', label: '用户' },
   { to: '/resources/racks', label: '机架' },
-]
+];
 
 const dictionaryNavItems = [
   { to: '/dictionaries/itemtypes', label: '硬件类型' },
@@ -57,7 +57,7 @@ const dictionaryNavItems = [
   { to: '/dictionaries/filetypes', label: '文件类型' },
   { to: '/dictionaries/dpttypes', label: '所属部门' },
   { to: '/dictionaries/tags', label: '标记' },
-]
+];
 
 const toolNavItems = [
   { to: '/labels', label: '打印标签' },
@@ -65,188 +65,207 @@ const toolNavItems = [
   { to: '/browse', label: '浏览数据' },
   { to: '/settings', label: '设置' },
   { to: '/history', label: '操作日志' },
-]
+];
 
-const dbFileInput = ref<HTMLInputElement | null>(null)
-const importingDatabase = ref(false)
+const dbFileInput = ref<HTMLInputElement | null>(null);
+const importingDatabase = ref(false);
 
 function triggerDatabaseImport() {
-  dbFileInput.value?.click()
+  dbFileInput.value?.click();
 }
 
 async function handleDatabaseFileSelected(event: Event) {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
-  input.value = ''
-  if (!file) return
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = '';
+  if (!file) return;
 
   if (!file.name.endsWith('.db')) {
-    notice.error('请选择 .db 格式的数据库文件')
-    return
+    notice.error('请选择 .db 格式的数据库文件');
+    return;
   }
 
-  importingDatabase.value = true
-  notice.info('正在导入数据库，请稍候...')
+  importingDatabase.value = true;
+  notice.info('正在导入数据库，请稍候...');
 
   try {
-    const fd = new FormData()
-    fd.append('file', file)
-    await api.post('/import/database', fd, { timeout: 0 })
-    notice.success('数据库导入成功，即将跳转到登录页...')
-    auth.logout()
+    const fd = new FormData();
+    fd.append('file', file);
+    await api.post('/import/database', fd, { timeout: 0 });
+    notice.success('数据库导入成功，即将跳转到登录页...');
+    auth.logout();
     setTimeout(() => {
-      window.location.href = '/login'
-    }, 1500)
+      window.location.href = '/login';
+    }, 1500);
   } catch {
     // api client 拦截器已处理错误提示
   } finally {
-    importingDatabase.value = false
+    importingDatabase.value = false;
   }
 }
 
-const viewRefreshTick = ref(0)
-const downloadingDatabaseBackup = ref(false)
-const downloadingFullBackup = ref(false)
-const recentViewHistory = ref<ViewHistoryEntry[]>([])
-const recentHistoryQuickTip = '记录新增、编辑操作记录'
+const viewRefreshTick = ref(0);
+const downloadingDatabaseBackup = ref(false);
+const downloadingFullBackup = ref(false);
+const recentViewHistory = ref<ViewHistoryEntry[]>([]);
+const recentHistoryQuickTip = '记录新增、编辑操作记录';
 // Use path-based key so same-path query changes (e.g. create=1 cleanup) do not remount the page.
-const routeKey = computed(() => `${route.path}::${viewRefreshTick.value}`)
+const routeKey = computed(() => `${route.path}::${viewRefreshTick.value}`);
 
 function onNavClick(target: string, event: MouseEvent) {
-  const resolved = router.resolve(target)
-  if (resolved.path !== route.path) return
+  const resolved = router.resolve(target);
+  if (resolved.path !== route.path) return;
 
   // 当前菜单重复点击时，强制重建右侧视图
-  event.preventDefault()
-  viewRefreshTick.value += 1
+  event.preventDefault();
+  viewRefreshTick.value += 1;
 }
 
 function logout() {
-  auth.logout()
-  router.replace('/login')
+  auth.logout();
+  router.replace('/login');
 }
 
 function formatBackupDate() {
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  const day = String(now.getDate()).padStart(2, '0')
-  return `${year}${month}${day}`
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}${month}${day}`;
 }
 
 function resolveDownloadFileName(disposition: unknown) {
-  if (typeof disposition !== 'string') return ''
-  const utf8 = disposition.match(/filename\*=UTF-8''([^;]+)/i)
+  if (typeof disposition !== 'string') return '';
+  const utf8 = disposition.match(/filename\*=UTF-8''([^;]+)/i);
   if (utf8?.[1]) {
     try {
-      return decodeURIComponent(utf8[1])
+      return decodeURIComponent(utf8[1]);
     } catch {
-      return utf8[1]
+      return utf8[1];
     }
   }
-  const plain = disposition.match(/filename="?([^";]+)"?/i)
-  return plain?.[1] ?? ''
+  const plain = disposition.match(/filename="?([^";]+)"?/i);
+  return plain?.[1] ?? '';
 }
 
-async function triggerDownload(url: string, fallbackFileName: string, pendingRef: typeof downloadingDatabaseBackup, failedText: string) {
-  if (pendingRef.value) return
+async function triggerDownload(
+  url: string,
+  fallbackFileName: string,
+  pendingRef: typeof downloadingDatabaseBackup,
+  failedText: string
+) {
+  if (pendingRef.value) return;
 
-  pendingRef.value = true
+  pendingRef.value = true;
   try {
     const response = await api.get(url, {
       responseType: 'blob',
       timeout: 0,
-    })
-    const fileName = resolveDownloadFileName(response.headers['content-disposition']) || fallbackFileName
-    const contentType = response.headers['content-type'] || 'application/octet-stream'
-    const blob = response.data instanceof Blob ? response.data : new Blob([response.data], { type: contentType })
-    const objectURL = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = objectURL
-    link.download = fileName
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    URL.revokeObjectURL(objectURL)
+    });
+    const fileName =
+      resolveDownloadFileName(response.headers['content-disposition']) || fallbackFileName;
+    const contentType = response.headers['content-type'] || 'application/octet-stream';
+    const blob =
+      response.data instanceof Blob
+        ? response.data
+        : new Blob([response.data], { type: contentType });
+    const objectURL = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = objectURL;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(objectURL);
   } catch {
-    notice.error(failedText)
+    notice.error(failedText);
   } finally {
-    pendingRef.value = false
+    pendingRef.value = false;
   }
 }
 
 async function downloadDatabaseBackup() {
-  await triggerDownload('/backups/database', `itdb-${formatBackupDate()}.db`, downloadingDatabaseBackup, '数据库备份下载失败')
+  await triggerDownload(
+    '/backups/database',
+    `itdb-${formatBackupDate()}.db`,
+    downloadingDatabaseBackup,
+    '数据库备份下载失败'
+  );
 }
 
 async function downloadFullBackup() {
-  await triggerDownload('/backups/full', `itdb-${formatBackupDate()}.tar.gz`, downloadingFullBackup, '完全备份下载失败')
+  await triggerDownload(
+    '/backups/full',
+    `itdb-${formatBackupDate()}.tar.gz`,
+    downloadingFullBackup,
+    '完全备份下载失败'
+  );
 }
 
 async function loadRecentViewHistory() {
   try {
-    const { data } = await api.get<ViewHistoryEntry[]>('/view-history')
-    recentViewHistory.value = Array.isArray(data) ? data : []
+    const { data } = await api.get<ViewHistoryEntry[]>('/view-history');
+    recentViewHistory.value = Array.isArray(data) ? data : [];
   } catch {
-    recentViewHistory.value = []
+    recentViewHistory.value = [];
   }
 }
 
 function handleViewHistoryUpdated() {
-  void loadRecentViewHistory()
+  void loadRecentViewHistory();
 }
 
 function formatRecentViewHistory(entry: ViewHistoryEntry) {
   try {
-    const parsed = new URL(entry.url, window.location.origin)
-    const pathname = parsed.pathname.replace(/\/+$/, '')
-    const editID = parsed.searchParams.get('edit')
-    const subtypeEditID = parsed.searchParams.get('subtypeEdit')
+    const parsed = new URL(entry.url, window.location.origin);
+    const pathname = parsed.pathname.replace(/\/+$/, '');
+    const editID = parsed.searchParams.get('edit');
+    const subtypeEditID = parsed.searchParams.get('subtypeEdit');
 
     if (pathname.startsWith('/resources/')) {
-      const resourceKey = pathname.split('/').filter(Boolean).pop() ?? ''
-      const title = recentHistoryResourceTitleMap[resourceKey]
-      if (title && editID) return `${title}: ${editID}`
+      const resourceKey = pathname.split('/').filter(Boolean).pop() ?? '';
+      const title = recentHistoryResourceTitleMap[resourceKey];
+      if (title && editID) return `${title}: ${editID}`;
     }
 
     if (pathname.startsWith('/dictionaries/')) {
-      if (subtypeEditID) return `合同子类型: ${subtypeEditID}`
-      const dictionaryKey = pathname.split('/').filter(Boolean).pop() ?? ''
-      const title = recentHistoryDictionaryTitleMap[dictionaryKey]
-      if (title && editID) return `${title}: ${editID}`
+      if (subtypeEditID) return `合同子类型: ${subtypeEditID}`;
+      const dictionaryKey = pathname.split('/').filter(Boolean).pop() ?? '';
+      const title = recentHistoryDictionaryTitleMap[dictionaryKey];
+      if (title && editID) return `${title}: ${editID}`;
     }
   } catch {
     // Fallback to stored description below.
   }
-  return entry.description
+  return entry.description;
 }
 
 // 空闲 1 小时自动跳转登录页
-const IDLE_TIMEOUT = 60 * 60 * 1000
-let idleTimer: ReturnType<typeof setTimeout> | null = null
+const IDLE_TIMEOUT = 60 * 60 * 1000;
+let idleTimer: ReturnType<typeof setTimeout> | null = null;
 
 function resetIdleTimer() {
-  if (idleTimer) clearTimeout(idleTimer)
+  if (idleTimer) clearTimeout(idleTimer);
   idleTimer = setTimeout(() => {
-    auth.logout()
-    router.replace('/login')
-  }, IDLE_TIMEOUT)
+    auth.logout();
+    router.replace('/login');
+  }, IDLE_TIMEOUT);
 }
 
-const idleEvents = ['mousemove', 'keydown', 'click', 'scroll'] as const
+const idleEvents = ['mousemove', 'keydown', 'click', 'scroll'] as const;
 
 onMounted(() => {
-  void loadRecentViewHistory()
-  window.addEventListener('itdb:view-history-updated', handleViewHistoryUpdated)
-  resetIdleTimer()
-  idleEvents.forEach(e => window.addEventListener(e, resetIdleTimer))
-})
+  void loadRecentViewHistory();
+  window.addEventListener('itdb:view-history-updated', handleViewHistoryUpdated);
+  resetIdleTimer();
+  idleEvents.forEach(e => window.addEventListener(e, resetIdleTimer));
+});
 
 onBeforeUnmount(() => {
-  window.removeEventListener('itdb:view-history-updated', handleViewHistoryUpdated)
-  if (idleTimer) clearTimeout(idleTimer)
-  idleEvents.forEach(e => window.removeEventListener(e, resetIdleTimer))
-})
+  window.removeEventListener('itdb:view-history-updated', handleViewHistoryUpdated);
+  if (idleTimer) clearTimeout(idleTimer);
+  idleEvents.forEach(e => window.removeEventListener(e, resetIdleTimer));
+});
 </script>
 
 <template>
@@ -319,10 +338,33 @@ onBeforeUnmount(() => {
         >
           <span class="nav-action-content">
             <svg class="nav-action-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-              <ellipse cx="12" cy="5" rx="7" ry="2.5" fill="none" stroke="currentColor" stroke-width="1.8" />
-              <path d="M5 5v10c0 1.38 3.13 2.5 7 2.5s7-1.12 7-2.5V5" fill="none" stroke="currentColor" stroke-width="1.8" />
-              <path d="M5 10c0 1.38 3.13 2.5 7 2.5s7-1.12 7-2.5" fill="none" stroke="currentColor" stroke-width="1.8" />
-              <path d="M5 15c0 1.38 3.13 2.5 7 2.5s7-1.12 7-2.5" fill="none" stroke="currentColor" stroke-width="1.8" />
+              <ellipse
+                cx="12"
+                cy="5"
+                rx="7"
+                ry="2.5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              />
+              <path
+                d="M5 5v10c0 1.38 3.13 2.5 7 2.5s7-1.12 7-2.5V5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              />
+              <path
+                d="M5 10c0 1.38 3.13 2.5 7 2.5s7-1.12 7-2.5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              />
+              <path
+                d="M5 15c0 1.38 3.13 2.5 7 2.5s7-1.12 7-2.5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              />
             </svg>
             <span>{{ downloadingDatabaseBackup ? '数据库备份中...' : '数据库备份' }}</span>
           </span>
@@ -336,8 +378,20 @@ onBeforeUnmount(() => {
         >
           <span class="nav-action-content">
             <svg class="nav-action-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M4 8.5 12 4l8 4.5-8 4.5L4 8.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
-              <path d="M4 8.5V16l8 4 8-4V8.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+              <path
+                d="M4 8.5 12 4l8 4.5-8 4.5L4 8.5Z"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M4 8.5V16l8 4 8-4V8.5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linejoin="round"
+              />
               <path d="M12 13v7" fill="none" stroke="currentColor" stroke-width="1.8" />
             </svg>
             <span>{{ downloadingFullBackup ? '完全备份中...' : '完全备份' }}</span>
@@ -348,7 +402,9 @@ onBeforeUnmount(() => {
           <div
             class="sidebar-recent-history-title sidebar-recent-history-title-tip"
             :data-quick-tip="recentHistoryQuickTip"
-          >最近历史记录</div>
+          >
+            最近历史记录
+          </div>
           <div class="sidebar-recent-history-list">
             <RouterLink
               v-for="entry in recentViewHistory"

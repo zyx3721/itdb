@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import type { RouteLocationRaw } from 'vue-router'
-import api from '../api/client'
+import { computed, onMounted, ref } from 'vue';
+import type { RouteLocationRaw } from 'vue-router';
+import api from '../api/client';
 
 type Summary = {
-  counts: Record<string, number>
-}
+  counts: Record<string, number>;
+};
 
 type ModuleAction = {
-  label: string
-  to: RouteLocationRaw
-  iconKey?: string
-}
+  label: string;
+  to: RouteLocationRaw;
+  iconKey?: string;
+};
 
 type HomeModule = {
-  key: string
-  title: string
-  description: string
-  iconKey: string
-  countKey?: string
-  entry: RouteLocationRaw
-  actions: ModuleAction[]
-}
+  key: string;
+  title: string;
+  description: string;
+  iconKey: string;
+  countKey?: string;
+  entry: RouteLocationRaw;
+  actions: ModuleAction[];
+};
 
 // 模块主图标 SVG（72×72，使用 currentColor）
 const moduleIcons: Record<string, string> = {
@@ -37,7 +37,7 @@ const moduleIcons: Record<string, string> = {
   locations: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>`,
   labels: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2H18a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path d="M6 12h12"/><path d="M6 16h12"/><path d="M4 8v14"/><path d="M20 8v14"/></svg>`,
   settings: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
-}
+};
 
 // 操作按钮小图标 SVG
 const actionIcons: Record<string, string> = {
@@ -48,19 +48,19 @@ const actionIcons: Record<string, string> = {
   printer: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>`,
   users: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
   tag: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`,
-}
+};
 
-const summary = ref<Summary | null>(null)
-const loading = ref(false)
-const error = ref('')
+const summary = ref<Summary | null>(null);
+const loading = ref(false);
+const error = ref('');
 
 function withCreateQuery(to: RouteLocationRaw): RouteLocationRaw {
   if (typeof to === 'string') {
-    return { path: to, query: { create: '1' } }
+    return { path: to, query: { create: '1' } };
   }
-  const next = { ...(to as Record<string, unknown>) }
-  next.query = { ...((next.query as Record<string, unknown>) ?? {}), create: '1' }
-  return next as RouteLocationRaw
+  const next = { ...(to as Record<string, unknown>) };
+  next.query = { ...((next.query as Record<string, unknown>) ?? {}), create: '1' };
+  return next as RouteLocationRaw;
 }
 
 const modules: HomeModule[] = [
@@ -87,7 +87,11 @@ const modules: HomeModule[] = [
     entry: '/resources/software',
     actions: [
       { label: '查找', to: '/resources/software', iconKey: 'search' },
-      { label: '新增', to: { path: '/resources/software', query: { create: '1' } }, iconKey: 'plus' },
+      {
+        label: '新增',
+        to: { path: '/resources/software', query: { create: '1' } },
+        iconKey: 'plus',
+      },
     ],
   },
   {
@@ -99,7 +103,11 @@ const modules: HomeModule[] = [
     entry: '/resources/invoices',
     actions: [
       { label: '查找', to: '/resources/invoices', iconKey: 'search' },
-      { label: '新增', to: { path: '/resources/invoices', query: { create: '1' } }, iconKey: 'plus' },
+      {
+        label: '新增',
+        to: { path: '/resources/invoices', query: { create: '1' } },
+        iconKey: 'plus',
+      },
     ],
   },
   {
@@ -119,7 +127,11 @@ const modules: HomeModule[] = [
     entry: '/resources/contracts',
     actions: [
       { label: '查找', to: '/resources/contracts', iconKey: 'search' },
-      { label: '新增', to: { path: '/resources/contracts', query: { create: '1' } }, iconKey: 'plus' },
+      {
+        label: '新增',
+        to: { path: '/resources/contracts', query: { create: '1' } },
+        iconKey: 'plus',
+      },
       { label: '合同类型', to: '/dictionaries/contracttypes', iconKey: 'gear' },
     ],
   },
@@ -176,7 +188,11 @@ const modules: HomeModule[] = [
     entry: '/resources/locations',
     actions: [
       { label: '查找', to: '/resources/locations', iconKey: 'search' },
-      { label: '新增', to: { path: '/resources/locations', query: { create: '1' } }, iconKey: 'plus' },
+      {
+        label: '新增',
+        to: { path: '/resources/locations', query: { create: '1' } },
+        iconKey: 'plus',
+      },
     ],
   },
   {
@@ -199,35 +215,35 @@ const modules: HomeModule[] = [
       { label: '标记', to: '/dictionaries/tags', iconKey: 'tag' },
     ],
   },
-]
+];
 
 const cards = computed(() => {
-  const counts = summary.value?.counts ?? {}
-  return modules.map((module) => ({
+  const counts = summary.value?.counts ?? {};
+  return modules.map(module => ({
     ...module,
-    actions: module.actions.map((action) =>
-      action.label === '新增'
-        ? { ...action, to: withCreateQuery(action.to) }
-        : action,
+    actions: module.actions.map(action =>
+      action.label === '新增' ? { ...action, to: withCreateQuery(action.to) } : action
     ),
     count: module.countKey ? Number(counts[module.countKey] ?? 0) : null,
-  }))
-})
+  }));
+});
 
 async function load() {
-  loading.value = true
-  error.value = ''
+  loading.value = true;
+  error.value = '';
   try {
-    const { data } = await api.get<Summary>('/dashboard/summary')
-    summary.value = data
+    const { data } = await api.get<Summary>('/dashboard/summary');
+    summary.value = data;
   } catch (err: unknown) {
-    error.value = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? '首页数据加载失败'
+    error.value =
+      (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+      '首页数据加载失败';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
-onMounted(load)
+onMounted(load);
 </script>
 
 <template>
@@ -260,8 +276,17 @@ onMounted(load)
           <p class="legacy-home-desc">{{ card.description }}</p>
 
           <div class="legacy-home-actions">
-            <RouterLink v-for="action in card.actions" :key="`${card.key}-${action.label}`" :to="action.to" class="legacy-action-link">
-              <span v-if="action.iconKey" class="legacy-action-icon" v-html="actionIcons[action.iconKey]" />
+            <RouterLink
+              v-for="action in card.actions"
+              :key="`${card.key}-${action.label}`"
+              :to="action.to"
+              class="legacy-action-link"
+            >
+              <span
+                v-if="action.iconKey"
+                class="legacy-action-icon"
+                v-html="actionIcons[action.iconKey]"
+              />
               <span>{{ action.label }}</span>
             </RouterLink>
           </div>
@@ -300,7 +325,9 @@ onMounted(load)
   place-items: center;
   text-decoration: none;
   color: #2a7cb7;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .legacy-home-media-link:hover {

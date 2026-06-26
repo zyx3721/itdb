@@ -217,7 +217,10 @@ body {
   text-decoration: none;
   padding: 10px 12px;
   border-radius: 10px;
-  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
   width: 92%;
   text-align: center;
   font-size: 18px;
@@ -706,7 +709,9 @@ button {
   padding: 0.5rem 0.9rem;
   cursor: pointer;
   font-weight: 600;
-  transition: transform 0.15s ease, opacity 0.2s ease;
+  transition:
+    transform 0.15s ease,
+    opacity 0.2s ease;
 }
 
 button:hover {

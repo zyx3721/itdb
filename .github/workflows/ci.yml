@@ -1,0 +1,177 @@
+name: CI/CD
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: 登录 Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: 生成标签
+        id: tags
+        run: |
+          IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/itdb"
+          VERSION=${GITHUB_REF#refs/tags/v}
+          if [[ "$VERSION" =~ (alpha|beta|rc|pre) ]]; then
+            echo "tags=${IMAGE}:${VERSION}" >> $GITHUB_OUTPUT
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            echo "📦 检测到预发布版本: v${VERSION} (不打 latest 标签)"
+          else
+            echo "tags=${IMAGE}:${VERSION},${IMAGE}:latest" >> $GITHUB_OUTPUT
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+            echo "🚀 正式版本: v${VERSION} (打 latest 标签)"
+          fi
+
+      - name: 设置 Go 环境
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.25'
+          cache-dependency-path: backend/go.sum
+
+      - name: 设置 Node 环境
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 交叉编译 Backend 多平台二进制文件
+        working-directory: backend
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          mkdir -p dist
+
+          prepare_package() {
+            local pkg_dir=$1
+            mkdir -p ${pkg_dir}
+            cp .env.example ${pkg_dir}/.env.example
+            echo "请将 .env.example 复制为 .env 并配置相关参数" > ${pkg_dir}/README.txt
+          }
+
+          echo "🔨 编译 Linux AMD64..."
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o itdb ./cmd/server/main.go
+          prepare_package "dist/linux_amd64"
+          mv itdb dist/linux_amd64/
+          tar -czf dist/itdb_${VERSION}_linux_amd64.tar.gz -C dist linux_amd64
+          rm -rf dist/linux_amd64
+
+          echo "🔨 编译 Linux ARM64..."
+          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o itdb ./cmd/server/main.go
+          prepare_package "dist/linux_arm64"
+          mv itdb dist/linux_arm64/
+          tar -czf dist/itdb_${VERSION}_linux_arm64.tar.gz -C dist linux_arm64
+          rm -rf dist/linux_arm64
+
+          echo "📝 生成校验和..."
+          cd dist
+          sha256sum *.tar.gz *.zip > checksums.txt
+          cd ..
+
+          echo "✅ 编译完成"
+
+      - name: 构建 Frontend 静态资源包
+        working-directory: frontend
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          mkdir -p dist-release
+
+          echo "📦 安装 Frontend 依赖..."
+          npm ci
+
+          echo "🔨 构建 Frontend 静态资源..."
+          npm run build
+
+          echo "📦 打包 Frontend 静态资源..."
+          tar -czf dist-release/itdb-frontend_${VERSION}.tar.gz -C dist .
+
+          echo "📝 生成 Frontend 校验和..."
+          cd dist-release
+          sha256sum *.tar.gz > checksums.txt
+          cd ..
+
+          echo "✅ Frontend 构建完成"
+
+      - name: 构建并推送 Docker 镜像
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./deploy/Dockerfile
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          build-args: |
+            APP_VERSION=${{ github.ref_name }}
+
+      - name: 生成 Changelog
+        id: changelog
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          if [ -n "$PREV_TAG" ]; then
+            COMMITS=$(git log $PREV_TAG..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          else
+            COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges -10)
+          fi
+
+          if [[ "$VERSION" =~ (alpha|beta|rc|pre) ]]; then
+            IS_PRERELEASE="true"
+          else
+            IS_PRERELEASE="false"
+          fi
+
+          cat > release_notes.md << EOF
+          ## 🎉 KVM Manager v${VERSION} 发布
+
+          ### 📋 构建信息
+          - **版本**: v${VERSION}
+          - **Commit**: ${GITHUB_SHA:0:7}
+          - **构建时间**: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          ### 📝 更新内容
+          ${COMMITS}
+
+          ### 🐳 Docker 镜像
+          \`\`\`bash
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/itdb:${VERSION}
+          \`\`\`
+
+          ### 📦 二进制下载
+          - Linux AMD64: \`itdb_${VERSION}_linux_amd64.tar.gz\`
+          - Linux ARM64: \`itdb_${VERSION}_linux_arm64.tar.gz\`
+          - Frontend 静态资源包: \`itdb-frontend_${VERSION}.tar.gz\`
+
+          ### 🔐 校验和
+          请下载对应的 \`checksums.txt\` 验证文件完整性。
+          EOF
+
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "is_prerelease=${IS_PRERELEASE}" >> $GITHUB_OUTPUT
+
+      - name: 创建 GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release_notes.md
+          draft: false
+          prerelease: ${{ steps.changelog.outputs.is_prerelease == 'true' }}
+          generate_release_notes: false
+          files: |
+            backend/dist/*.tar.gz
+            backend/dist/*.zip
+            backend/dist/checksums.txt
+            frontend/dist-release/*.tar.gz
+            frontend/dist-release/checksums.txt

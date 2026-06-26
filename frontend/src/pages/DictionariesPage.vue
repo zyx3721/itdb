@@ -1,33 +1,49 @@
 ﻿<script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import api from '../api/client'
-import { useAuthStore } from '../stores/auth'
-import { useBootstrapStore } from '../stores/bootstrap'
-import { useNoticeStore } from '../stores/notice'
+import { computed, reactive, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import api from '../api/client';
+import { useAuthStore } from '../stores/auth';
+import { useBootstrapStore } from '../stores/bootstrap';
+import { useNoticeStore } from '../stores/notice';
 
-type VisibleDictionaryName = 'itemtypes' | 'contracttypes' | 'statustypes' | 'filetypes' | 'dpttypes' | 'tags'
-type DictionaryRow = Record<string, unknown>
-type TagRelatedRow = { id: number; txt: string }
-type TagRelatedTarget = 'items' | 'software'
-type FieldType = 'text' | 'number' | 'boolean'
-type DictionaryField = { key: string; label: string; type: FieldType }
-type EditorMode = 'dictionary' | 'contractSubtype'
+type VisibleDictionaryName =
+  | 'itemtypes'
+  | 'contracttypes'
+  | 'statustypes'
+  | 'filetypes'
+  | 'dpttypes'
+  | 'tags';
+type DictionaryRow = Record<string, unknown>;
+type TagRelatedRow = { id: number; txt: string };
+type TagRelatedTarget = 'items' | 'software';
+type FieldType = 'text' | 'number' | 'boolean';
+type DictionaryField = { key: string; label: string; type: FieldType };
+type EditorMode = 'dictionary' | 'contractSubtype';
 type DeleteTarget =
   | { kind: 'dictionary'; id: number }
   | { kind: 'dictionaryBatch'; dictionary: VisibleDictionaryName; ids: number[] }
   | { kind: 'contractSubtype'; id: number }
-  | { kind: 'contractSubtypeBatch'; ids: number[] }
+  | { kind: 'contractSubtypeBatch'; ids: number[] };
 
-const auth = useAuthStore()
-const bootstrap = useBootstrapStore()
-const noticeStore = useNoticeStore()
-const route = useRoute()
-const router = useRouter()
+const auth = useAuthStore();
+const bootstrap = useBootstrapStore();
+const noticeStore = useNoticeStore();
+const route = useRoute();
+const router = useRouter();
 
-const dictionaryOrder: VisibleDictionaryName[] = ['itemtypes', 'contracttypes', 'statustypes', 'filetypes', 'dpttypes', 'tags']
+const dictionaryOrder: VisibleDictionaryName[] = [
+  'itemtypes',
+  'contracttypes',
+  'statustypes',
+  'filetypes',
+  'dpttypes',
+  'tags',
+];
 
-const dictionaryConfig: Record<VisibleDictionaryName, { title: string; fields: DictionaryField[] }> = {
+const dictionaryConfig: Record<
+  VisibleDictionaryName,
+  { title: string; fields: DictionaryField[] }
+> = {
   itemtypes: {
     title: '硬件类型',
     fields: [
@@ -55,7 +71,7 @@ const dictionaryConfig: Record<VisibleDictionaryName, { title: string; fields: D
     title: '标记',
     fields: [{ key: 'name', label: '名称', type: 'text' }],
   },
-}
+};
 const dictionaryHeaderTitleMap: Record<VisibleDictionaryName, string> = {
   itemtypes: '\u4fee\u6539\u786c\u4ef6\u7c7b\u578b',
   contracttypes: '\u4fee\u6539\u5408\u540c\u7c7b\u578b',
@@ -63,134 +79,152 @@ const dictionaryHeaderTitleMap: Record<VisibleDictionaryName, string> = {
   filetypes: '\u4fee\u6539\u6587\u4ef6\u7c7b\u578b',
   dpttypes: '\u4fee\u6539\u6240\u5c5e\u90e8\u95e8',
   tags: '\u7f16\u8f91\u6807\u8bb0',
-}
+};
 
 const fixedStatusTypeColorMap: Record<string, string> = {
   使用中: '#2f7fba',
   库存: '#16a34a',
   有故障: '#dc2626',
   报废: '#9ca3af',
-}
+};
 
-const dictionaries = ref<Record<string, DictionaryRow[]>>({})
-const active = ref<VisibleDictionaryName>('itemtypes')
-const selectedContractTypeId = ref<number | null>(null)
+const dictionaries = ref<Record<string, DictionaryRow[]>>({});
+const active = ref<VisibleDictionaryName>('itemtypes');
+const selectedContractTypeId = ref<number | null>(null);
 
-const loading = ref(false)
-const error = ref('')
-const saving = ref(false)
-const deleting = ref(false)
+const loading = ref(false);
+const error = ref('');
+const saving = ref(false);
+const deleting = ref(false);
 
-const editorOpen = ref(false)
-const editorMode = ref<EditorMode>('dictionary')
-const editingId = ref<number | null>(null)
-const editorValues = reactive<Record<string, string | number>>({})
-const confirmOpen = ref(false)
-const deleteTarget = ref<DeleteTarget | null>(null)
-const selectedDictionaryIds = ref<number[]>([])
-const selectedContractTypeIds = ref<number[]>([])
-const selectedContractSubtypeIds = ref<number[]>([])
+const editorOpen = ref(false);
+const editorMode = ref<EditorMode>('dictionary');
+const editingId = ref<number | null>(null);
+const editorValues = reactive<Record<string, string | number>>({});
+const confirmOpen = ref(false);
+const deleteTarget = ref<DeleteTarget | null>(null);
+const selectedDictionaryIds = ref<number[]>([]);
+const selectedContractTypeIds = ref<number[]>([]);
+const selectedContractSubtypeIds = ref<number[]>([]);
 
-const canWrite = computed(() => !auth.isReadOnly)
-const pageTitle = computed(() => dictionaryHeaderTitleMap[active.value])
-const createDictionaryButtonText = computed(() => `新增${dictionaryConfig[active.value].title}`)
+const canWrite = computed(() => !auth.isReadOnly);
+const pageTitle = computed(() => dictionaryHeaderTitleMap[active.value]);
+const createDictionaryButtonText = computed(() => `新增${dictionaryConfig[active.value].title}`);
 
 const visibleDictionaryNames = computed<VisibleDictionaryName[]>(() =>
-  dictionaryOrder.filter((name) => dictionaries.value[name] !== undefined),
-)
+  dictionaryOrder.filter(name => dictionaries.value[name] !== undefined)
+);
 
-const activeRows = computed(() => (dictionaries.value[active.value] ?? []) as DictionaryRow[])
-const tagRows = computed(() => (dictionaries.value.tags ?? []) as DictionaryRow[])
-const contractTypeRows = computed(() => (dictionaries.value.contracttypes ?? []) as DictionaryRow[])
+const activeRows = computed(() => (dictionaries.value[active.value] ?? []) as DictionaryRow[]);
+const tagRows = computed(() => (dictionaries.value.tags ?? []) as DictionaryRow[]);
+const contractTypeRows = computed(
+  () => (dictionaries.value.contracttypes ?? []) as DictionaryRow[]
+);
 const contractSubtypeRows = computed(() => {
-  const typeID = Number(selectedContractTypeId.value ?? 0)
-  return ((dictionaries.value.contractsubtypes ?? []) as DictionaryRow[]).filter((row) => Number(row.contypeid ?? 0) === typeID)
-})
-const selectedTagId = ref<number | null>(null)
-const tagRelatedTarget = ref<TagRelatedTarget | null>(null)
+  const typeID = Number(selectedContractTypeId.value ?? 0);
+  return ((dictionaries.value.contractsubtypes ?? []) as DictionaryRow[]).filter(
+    row => Number(row.contypeid ?? 0) === typeID
+  );
+});
+const selectedTagId = ref<number | null>(null);
+const tagRelatedTarget = ref<TagRelatedTarget | null>(null);
 const selectedTagRow = computed<DictionaryRow | null>(() => {
-  const id = selectedTagId.value
-  if (!id) return null
-  return tagRows.value.find((row) => Number(row.id ?? 0) === id) ?? null
-})
-const relatedTagItems = ref<TagRelatedRow[]>([])
-const relatedTagSoftware = ref<TagRelatedRow[]>([])
-const tagRelatedLoading = ref(false)
-const tagRelatedError = ref('')
-let tagRelatedSeq = 0
+  const id = selectedTagId.value;
+  if (!id) return null;
+  return tagRows.value.find(row => Number(row.id ?? 0) === id) ?? null;
+});
+const relatedTagItems = ref<TagRelatedRow[]>([]);
+const relatedTagSoftware = ref<TagRelatedRow[]>([]);
+const tagRelatedLoading = ref(false);
+const tagRelatedError = ref('');
+let tagRelatedSeq = 0;
 const activeTagRelatedRows = computed<TagRelatedRow[]>(() => {
-  if (tagRelatedTarget.value === 'items') return relatedTagItems.value
-  if (tagRelatedTarget.value === 'software') return relatedTagSoftware.value
-  return []
-})
+  if (tagRelatedTarget.value === 'items') return relatedTagItems.value;
+  if (tagRelatedTarget.value === 'software') return relatedTagSoftware.value;
+  return [];
+});
 const tagRelatedPanelTitle = computed(() => {
-  if (tagRelatedTarget.value === 'items') return '\u5173\u8054\u786c\u4ef6'
-  if (tagRelatedTarget.value === 'software') return '\u5173\u8054\u8f6f\u4ef6'
-  return ''
-})
+  if (tagRelatedTarget.value === 'items') return '\u5173\u8054\u786c\u4ef6';
+  if (tagRelatedTarget.value === 'software') return '\u5173\u8054\u8f6f\u4ef6';
+  return '';
+});
 
 const editorFields = computed<DictionaryField[]>(() => {
   if (editorMode.value === 'contractSubtype') {
-    return [{ key: 'name', label: '子类型名称', type: 'text' }]
+    return [{ key: 'name', label: '子类型名称', type: 'text' }];
   }
-  return dictionaryConfig[active.value].fields
-})
+  return dictionaryConfig[active.value].fields;
+});
 
 const editorTitle = computed(() => {
   if (editorMode.value === 'contractSubtype') {
-    return editingId.value ? '编辑合同子类型' : '新增合同子类型'
+    return editingId.value ? '编辑合同子类型' : '新增合同子类型';
   }
-  return editingId.value ? `编辑${dictionaryConfig[active.value].title}` : `新增${dictionaryConfig[active.value].title}`
-})
+  return editingId.value
+    ? `编辑${dictionaryConfig[active.value].title}`
+    : `新增${dictionaryConfig[active.value].title}`;
+});
 
 const confirmMessage = computed(() => {
-  if (!deleteTarget.value) return ''
+  if (!deleteTarget.value) return '';
   if (deleteTarget.value.kind === 'dictionaryBatch') {
-    return `确认批量删除已选择的 ${deleteTarget.value.ids.length} 条记录吗？`
+    return `确认批量删除已选择的 ${deleteTarget.value.ids.length} 条记录吗？`;
   }
   if (deleteTarget.value.kind === 'contractSubtypeBatch') {
-    return `确认批量删除已选择的 ${deleteTarget.value.ids.length} 条合同子类型吗？`
+    return `确认批量删除已选择的 ${deleteTarget.value.ids.length} 条合同子类型吗？`;
   }
   if (deleteTarget.value.kind === 'contractSubtype') {
-    return `确认删除合同子类型 编号=${deleteTarget.value.id} 吗？`
+    return `确认删除合同子类型 编号=${deleteTarget.value.id} 吗？`;
   }
-  return `确认删除 编号=${deleteTarget.value.id} 吗？`
-})
+  return `确认删除 编号=${deleteTarget.value.id} 吗？`;
+});
 
-const selectedDictionaryIdSet = computed(() => new Set(selectedDictionaryIds.value))
-const selectedContractTypeIdSet = computed(() => new Set(selectedContractTypeIds.value))
-const selectedContractSubtypeIdSet = computed(() => new Set(selectedContractSubtypeIds.value))
-const selectableDictionaryRows = computed(() => activeRows.value.filter((row) => canDeleteDictionaryRow(row)))
-const selectableContractTypeRows = computed(() => contractTypeRows.value.filter((row) => canDeleteDictionaryRow(row)))
-const selectableContractSubtypeRows = computed(() => contractSubtypeRows.value.filter((row) => canDeleteDictionaryRow(row)))
+const selectedDictionaryIdSet = computed(() => new Set(selectedDictionaryIds.value));
+const selectedContractTypeIdSet = computed(() => new Set(selectedContractTypeIds.value));
+const selectedContractSubtypeIdSet = computed(() => new Set(selectedContractSubtypeIds.value));
+const selectableDictionaryRows = computed(() =>
+  activeRows.value.filter(row => canDeleteDictionaryRow(row))
+);
+const selectableContractTypeRows = computed(() =>
+  contractTypeRows.value.filter(row => canDeleteDictionaryRow(row))
+);
+const selectableContractSubtypeRows = computed(() =>
+  contractSubtypeRows.value.filter(row => canDeleteDictionaryRow(row))
+);
 const allDictionaryRowsSelected = computed(() => {
-  if (selectableDictionaryRows.value.length === 0) return false
-  return selectableDictionaryRows.value.every((row) => selectedDictionaryIdSet.value.has(Number(row.id ?? 0)))
-})
+  if (selectableDictionaryRows.value.length === 0) return false;
+  return selectableDictionaryRows.value.every(row =>
+    selectedDictionaryIdSet.value.has(Number(row.id ?? 0))
+  );
+});
 const allContractTypeRowsSelected = computed(() => {
-  if (selectableContractTypeRows.value.length === 0) return false
-  return selectableContractTypeRows.value.every((row) => selectedContractTypeIdSet.value.has(Number(row.id ?? 0)))
-})
+  if (selectableContractTypeRows.value.length === 0) return false;
+  return selectableContractTypeRows.value.every(row =>
+    selectedContractTypeIdSet.value.has(Number(row.id ?? 0))
+  );
+});
 const allContractSubtypeRowsSelected = computed(() => {
-  if (selectableContractSubtypeRows.value.length === 0) return false
-  return selectableContractSubtypeRows.value.every((row) => selectedContractSubtypeIdSet.value.has(Number(row.id ?? 0)))
-})
+  if (selectableContractSubtypeRows.value.length === 0) return false;
+  return selectableContractSubtypeRows.value.every(row =>
+    selectedContractSubtypeIdSet.value.has(Number(row.id ?? 0))
+  );
+});
 
 function isVisibleDictionaryName(name: string): name is VisibleDictionaryName {
-  return dictionaryOrder.includes(name as VisibleDictionaryName)
+  return dictionaryOrder.includes(name as VisibleDictionaryName);
 }
 
 function normalizeRouteTab(raw: unknown): VisibleDictionaryName | '' {
-  const tab = String(raw ?? '').trim()
-  if (!tab) return ''
-  if (tab === 'contractsubtypes') return 'contracttypes'
-  return isVisibleDictionaryName(tab) ? tab : ''
+  const tab = String(raw ?? '').trim();
+  if (!tab) return '';
+  if (tab === 'contractsubtypes') return 'contracttypes';
+  return isVisibleDictionaryName(tab) ? tab : '';
 }
 
 function toEditorValue(field: DictionaryField, source: unknown): string | number {
-  if (field.type === 'boolean') return Number(source ?? 0) === 1 ? 1 : 0
-  if (field.type === 'number') return Number(source ?? 0)
-  return decodeHtmlEntities(String(source ?? ''))
+  if (field.type === 'boolean') return Number(source ?? 0) === 1 ? 1 : 0;
+  if (field.type === 'number') return Number(source ?? 0);
+  return decodeHtmlEntities(String(source ?? ''));
 }
 
 function decodeHtmlEntities(raw: string) {
@@ -199,661 +233,698 @@ function decodeHtmlEntities(raw: string) {
     .replace(/&lt;/gi, '<')
     .replace(/&gt;/gi, '>')
     .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'")
+    .replace(/&#39;/gi, "'");
 }
 
 function displayText(raw: unknown) {
-  if (raw === undefined || raw === null || String(raw).trim() === '') return '-'
-  return decodeHtmlEntities(String(raw))
+  if (raw === undefined || raw === null || String(raw).trim() === '') return '-';
+  return decodeHtmlEntities(String(raw));
 }
 
 function normalizeHexColor(raw: unknown): string {
-  const color = String(raw ?? '').trim()
-  if (!/^#[0-9a-fA-F]{6}$/.test(color)) return ''
-  return color.toLowerCase()
+  const color = String(raw ?? '').trim();
+  if (!/^#[0-9a-fA-F]{6}$/.test(color)) return '';
+  return color.toLowerCase();
 }
 
 function getStatusDescription(row: DictionaryRow): string {
-  return String(row.statusdesc ?? '').trim()
+  return String(row.statusdesc ?? '').trim();
 }
 
 function getStatusTypeColor(row: DictionaryRow): string {
-  const fixedColor = fixedStatusTypeColorMap[getStatusDescription(row)]
-  if (fixedColor) return fixedColor
-  const customColor = normalizeHexColor(row.color)
-  return customColor || '#64748b'
+  const fixedColor = fixedStatusTypeColorMap[getStatusDescription(row)];
+  if (fixedColor) return fixedColor;
+  const customColor = normalizeHexColor(row.color);
+  return customColor || '#64748b';
 }
 
 function canMutateDictionaryRow(_row: DictionaryRow): boolean {
-  return true
+  return true;
 }
 
 function canDeleteDictionaryRow(row: DictionaryRow): boolean {
-  if (!canWrite.value) return false
-  if (!canMutateDictionaryRow(row)) return false
-  return Number(row.id ?? 0) > 0
+  if (!canWrite.value) return false;
+  if (!canMutateDictionaryRow(row)) return false;
+  return Number(row.id ?? 0) > 0;
 }
 
 function readTagCount(row: DictionaryRow, key: 'itemCount' | 'softwareCount'): number {
-  const n = Number(row[key] ?? 0)
-  if (!Number.isFinite(n) || n < 0) return 0
-  return n
+  const n = Number(row[key] ?? 0);
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return n;
 }
 
 function clearTagRelated() {
-  relatedTagItems.value = []
-  relatedTagSoftware.value = []
-  tagRelatedTarget.value = null
-  tagRelatedError.value = ''
+  relatedTagItems.value = [];
+  relatedTagSoftware.value = [];
+  tagRelatedTarget.value = null;
+  tagRelatedError.value = '';
 }
 
 function syncTagSelection() {
-  if (!selectedTagId.value) return
-  const found = tagRows.value.find((row) => Number(row.id ?? 0) === selectedTagId.value)
-  if (found) return
-  selectedTagId.value = null
-  clearTagRelated()
+  if (!selectedTagId.value) return;
+  const found = tagRows.value.find(row => Number(row.id ?? 0) === selectedTagId.value);
+  if (found) return;
+  selectedTagId.value = null;
+  clearTagRelated();
 }
 
 async function showTagRelated(row: DictionaryRow, target: TagRelatedTarget) {
-  const id = Number(row.id ?? 0)
-  if (!id) return
-  selectedTagId.value = id
-  tagRelatedTarget.value = target
-  tagRelatedError.value = ''
-  const seq = ++tagRelatedSeq
-  tagRelatedLoading.value = true
+  const id = Number(row.id ?? 0);
+  if (!id) return;
+  selectedTagId.value = id;
+  tagRelatedTarget.value = target;
+  tagRelatedError.value = '';
+  const seq = ++tagRelatedSeq;
+  tagRelatedLoading.value = true;
   if (target === 'items') {
-    relatedTagItems.value = []
+    relatedTagItems.value = [];
   } else {
-    relatedTagSoftware.value = []
+    relatedTagSoftware.value = [];
   }
   try {
-    const endpoint = target === 'items' ? `/tags/${id}/items` : `/tags/${id}/software`
-    const result = await api.get(endpoint)
-    if (seq !== tagRelatedSeq) return
+    const endpoint = target === 'items' ? `/tags/${id}/items` : `/tags/${id}/software`;
+    const result = await api.get(endpoint);
+    if (seq !== tagRelatedSeq) return;
     if (target === 'items') {
-      relatedTagItems.value = Array.isArray(result.data) ? (result.data as TagRelatedRow[]) : []
-      return
+      relatedTagItems.value = Array.isArray(result.data) ? (result.data as TagRelatedRow[]) : [];
+      return;
     }
-    relatedTagSoftware.value = Array.isArray(result.data) ? (result.data as TagRelatedRow[]) : []
+    relatedTagSoftware.value = Array.isArray(result.data) ? (result.data as TagRelatedRow[]) : [];
   } catch (err: unknown) {
-    if (seq !== tagRelatedSeq) return
+    if (seq !== tagRelatedSeq) return;
     if (target === 'items') {
-      relatedTagItems.value = []
+      relatedTagItems.value = [];
     } else {
-      relatedTagSoftware.value = []
+      relatedTagSoftware.value = [];
     }
-    tagRelatedError.value = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? '关联信息加载失败'
+    tagRelatedError.value =
+      (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+      '关联信息加载失败';
   } finally {
-    if (seq !== tagRelatedSeq) return
-    tagRelatedLoading.value = false
+    if (seq !== tagRelatedSeq) return;
+    tagRelatedLoading.value = false;
   }
 }
 
 function openTagRelatedEntry(target: TagRelatedTarget | null, id: number) {
-  if (!target) return
-  const rowID = Number(id)
-  if (!Number.isFinite(rowID) || rowID <= 0) return
-  const resourceName = target === 'items' ? 'items' : 'software'
-  void router.push({ name: 'resource', params: { resource: resourceName }, query: { edit: String(rowID) } })
+  if (!target) return;
+  const rowID = Number(id);
+  if (!Number.isFinite(rowID) || rowID <= 0) return;
+  const resourceName = target === 'items' ? 'items' : 'software';
+  void router.push({
+    name: 'resource',
+    params: { resource: resourceName },
+    query: { edit: String(rowID) },
+  });
 }
 
 function resetEditorValues(source?: DictionaryRow) {
-  Object.keys(editorValues).forEach((key) => delete editorValues[key])
+  Object.keys(editorValues).forEach(key => delete editorValues[key]);
   for (const field of editorFields.value) {
     if (source) {
-      editorValues[field.key] = toEditorValue(field, source[field.key])
-      continue
+      editorValues[field.key] = toEditorValue(field, source[field.key]);
+      continue;
     }
     if (field.type === 'boolean' || field.type === 'number') {
-      editorValues[field.key] = 0
+      editorValues[field.key] = 0;
     } else {
-      editorValues[field.key] = ''
+      editorValues[field.key] = '';
     }
   }
   if (editorMode.value === 'dictionary' && active.value === 'statustypes') {
-    editorValues.color = source ? getStatusTypeColor(source) : '#2f7fba'
+    editorValues.color = source ? getStatusTypeColor(source) : '#2f7fba';
   }
 }
 
 function syncContractTypeSelection() {
   if (active.value !== 'contracttypes') {
-    selectedContractTypeId.value = null
-    return
+    selectedContractTypeId.value = null;
+    return;
   }
 
-  const ids = contractTypeRows.value.map((row) => Number(row.id ?? 0)).filter((id) => id > 0)
+  const ids = contractTypeRows.value.map(row => Number(row.id ?? 0)).filter(id => id > 0);
   if (ids.length === 0) {
-    selectedContractTypeId.value = null
-    return
+    selectedContractTypeId.value = null;
+    return;
   }
-  if (!selectedContractTypeId.value) return
+  if (!selectedContractTypeId.value) return;
   if (!ids.includes(selectedContractTypeId.value)) {
-    selectedContractTypeId.value = null
+    selectedContractTypeId.value = null;
   }
 }
 
 function selectDictionary(name: VisibleDictionaryName) {
-  if (active.value === name && route.params.tab === name) return
-  active.value = name
-  void router.replace({ name: 'dictionaries', params: { tab: name } })
+  if (active.value === name && route.params.tab === name) return;
+  active.value = name;
+  void router.replace({ name: 'dictionaries', params: { tab: name } });
 }
 
 function selectContractType(id: number) {
-  selectedContractTypeId.value = id
+  selectedContractTypeId.value = id;
 }
 
 function clearEditorRouteQuery(...keys: string[]) {
-  const nextQuery = { ...route.query } as Record<string, string | string[] | null | undefined>
-  for (const key of keys) delete nextQuery[key]
-  const currentTab = normalizeRouteTab(route.params.tab) || active.value
-  void router.replace({ name: 'dictionaries', params: { tab: currentTab }, query: nextQuery })
+  const nextQuery = { ...route.query } as Record<string, string | string[] | null | undefined>;
+  for (const key of keys) delete nextQuery[key];
+  const currentTab = normalizeRouteTab(route.params.tab) || active.value;
+  void router.replace({ name: 'dictionaries', params: { tab: currentTab }, query: nextQuery });
 }
 
 async function recordRecentViewHistory(id: number, mode: EditorMode) {
-  const rowID = Number(id)
-  if (!Number.isFinite(rowID) || rowID <= 0) return
-  const tab = mode === 'contractSubtype' ? 'contracttypes' : active.value
+  const rowID = Number(id);
+  if (!Number.isFinite(rowID) || rowID <= 0) return;
+  const tab = mode === 'contractSubtype' ? 'contracttypes' : active.value;
   const query =
     mode === 'contractSubtype'
       ? { subtypeEdit: String(rowID), vh: String(Date.now()) }
-      : { edit: String(rowID), vh: String(Date.now()) }
-  const resolved = router.resolve({ name: 'dictionaries', params: { tab }, query })
-  const title = mode === 'contractSubtype' ? '合同子类型' : dictionaryConfig[active.value].title
+      : { edit: String(rowID), vh: String(Date.now()) };
+  const resolved = router.resolve({ name: 'dictionaries', params: { tab }, query });
+  const title = mode === 'contractSubtype' ? '合同子类型' : dictionaryConfig[active.value].title;
 
   try {
     await api.post('/view-history', {
       url: resolved.fullPath,
       description: `${title}: ${rowID}`,
-    })
-    window.dispatchEvent(new CustomEvent('itdb:view-history-updated'))
+    });
+    window.dispatchEvent(new CustomEvent('itdb:view-history-updated'));
   } catch {
     // Ignore recent-history write failures so dictionary editing stays usable.
   }
 }
 
 function applyDictionaryEditById(id: number) {
-  const row = activeRows.value.find((entry) => Number(entry.id ?? 0) === id)
-  if (!row) return false
-  openEditDictionaryRow(row)
-  clearEditorRouteQuery('edit', 'vh')
-  return true
+  const row = activeRows.value.find(entry => Number(entry.id ?? 0) === id);
+  if (!row) return false;
+  openEditDictionaryRow(row);
+  clearEditorRouteQuery('edit', 'vh');
+  return true;
 }
 
 function applyContractSubtypeEditById(id: number) {
-  const row = ((dictionaries.value.contractsubtypes ?? []) as DictionaryRow[]).find((entry) => Number(entry.id ?? 0) === id)
-  if (!row) return false
-  const contractTypeID = Number(row.contypeid ?? 0)
-  if (contractTypeID > 0) selectedContractTypeId.value = contractTypeID
-  openEditSubtypeRow(row)
-  clearEditorRouteQuery('subtypeEdit', 'vh')
-  return true
+  const row = ((dictionaries.value.contractsubtypes ?? []) as DictionaryRow[]).find(
+    entry => Number(entry.id ?? 0) === id
+  );
+  if (!row) return false;
+  const contractTypeID = Number(row.contypeid ?? 0);
+  if (contractTypeID > 0) selectedContractTypeId.value = contractTypeID;
+  openEditSubtypeRow(row);
+  clearEditorRouteQuery('subtypeEdit', 'vh');
+  return true;
 }
 
 function applyRouteQueryActions() {
-  const subtypeRaw = String(route.query.subtypeEdit ?? '').trim()
-  const subtypeID = Number(subtypeRaw)
+  const subtypeRaw = String(route.query.subtypeEdit ?? '').trim();
+  const subtypeID = Number(subtypeRaw);
   if (subtypeID > 0) {
     if (active.value !== 'contracttypes') {
-      active.value = 'contracttypes'
-      return
+      active.value = 'contracttypes';
+      return;
     }
-    if (applyContractSubtypeEditById(subtypeID)) return
-    clearEditorRouteQuery('subtypeEdit', 'vh')
-    return
+    if (applyContractSubtypeEditById(subtypeID)) return;
+    clearEditorRouteQuery('subtypeEdit', 'vh');
+    return;
   }
 
-  const editRaw = String(route.query.edit ?? '').trim()
-  const editID = Number(editRaw)
+  const editRaw = String(route.query.edit ?? '').trim();
+  const editID = Number(editRaw);
   if (editID > 0) {
-    if (applyDictionaryEditById(editID)) return
-    clearEditorRouteQuery('edit', 'vh')
+    if (applyDictionaryEditById(editID)) return;
+    clearEditorRouteQuery('edit', 'vh');
   }
 }
 
 function openCreateDictionaryRow() {
-  if (!canWrite.value) return
-  error.value = ''
-  editorMode.value = 'dictionary'
-  editingId.value = null
-  resetEditorValues()
-  editorOpen.value = true
+  if (!canWrite.value) return;
+  error.value = '';
+  editorMode.value = 'dictionary';
+  editingId.value = null;
+  resetEditorValues();
+  editorOpen.value = true;
 }
 
 function openEditDictionaryRow(row: DictionaryRow) {
-  if (!canWrite.value) return
-  if (!canMutateDictionaryRow(row)) return
-  error.value = ''
-  editorMode.value = 'dictionary'
-  editingId.value = Number(row.id ?? 0)
-  resetEditorValues(row)
-  editorOpen.value = true
+  if (!canWrite.value) return;
+  if (!canMutateDictionaryRow(row)) return;
+  error.value = '';
+  editorMode.value = 'dictionary';
+  editingId.value = Number(row.id ?? 0);
+  resetEditorValues(row);
+  editorOpen.value = true;
 }
 
 function openCreateSubtypeRow() {
-  if (!canWrite.value) return
+  if (!canWrite.value) return;
   if (!selectedContractTypeId.value) {
-    error.value = '请先选择一个合同类型'
-    noticeStore.error(error.value)
-    return
+    error.value = '请先选择一个合同类型';
+    noticeStore.error(error.value);
+    return;
   }
-  error.value = ''
-  editorMode.value = 'contractSubtype'
-  editingId.value = null
-  resetEditorValues()
-  editorOpen.value = true
+  error.value = '';
+  editorMode.value = 'contractSubtype';
+  editingId.value = null;
+  resetEditorValues();
+  editorOpen.value = true;
 }
 
 function openEditSubtypeRow(row: DictionaryRow) {
-  if (!canWrite.value) return
-  error.value = ''
-  editorMode.value = 'contractSubtype'
-  editingId.value = Number(row.id ?? 0)
-  resetEditorValues(row)
-  editorOpen.value = true
+  if (!canWrite.value) return;
+  error.value = '';
+  editorMode.value = 'contractSubtype';
+  editingId.value = Number(row.id ?? 0);
+  resetEditorValues(row);
+  editorOpen.value = true;
 }
 
 function closeEditor() {
-  if (saving.value) return
-  error.value = ''
-  editorOpen.value = false
-  editingId.value = null
+  if (saving.value) return;
+  error.value = '';
+  editorOpen.value = false;
+  editingId.value = null;
 }
 
 function requestRemoveDictionaryRow(row: DictionaryRow) {
-  if (!canWrite.value) return
-  if (!canMutateDictionaryRow(row)) return
-  const id = Number(row.id ?? 0)
-  if (!id) return
-  deleteTarget.value = { kind: 'dictionary', id }
-  confirmOpen.value = true
+  if (!canWrite.value) return;
+  if (!canMutateDictionaryRow(row)) return;
+  const id = Number(row.id ?? 0);
+  if (!id) return;
+  deleteTarget.value = { kind: 'dictionary', id };
+  confirmOpen.value = true;
 }
 
 function requestRemoveSubtypeRow(id: number) {
-  if (!canWrite.value) return
-  deleteTarget.value = { kind: 'contractSubtype', id }
-  confirmOpen.value = true
+  if (!canWrite.value) return;
+  deleteTarget.value = { kind: 'contractSubtype', id };
+  confirmOpen.value = true;
 }
 
 function closeConfirm() {
-  if (deleting.value) return
-  confirmOpen.value = false
-  deleteTarget.value = null
+  if (deleting.value) return;
+  confirmOpen.value = false;
+  deleteTarget.value = null;
 }
 
 function clearDictionarySelections() {
-  selectedDictionaryIds.value = []
-  selectedContractTypeIds.value = []
-  selectedContractSubtypeIds.value = []
+  selectedDictionaryIds.value = [];
+  selectedContractTypeIds.value = [];
+  selectedContractSubtypeIds.value = [];
 }
 
 function clearSelectedDictionaryRows() {
-  selectedDictionaryIds.value = []
+  selectedDictionaryIds.value = [];
 }
 
 function clearSelectedContractTypeRows() {
-  selectedContractTypeIds.value = []
+  selectedContractTypeIds.value = [];
 }
 
 function clearSelectedContractSubtypeRows() {
-  selectedContractSubtypeIds.value = []
+  selectedContractSubtypeIds.value = [];
 }
 
 function syncSelection(list: typeof selectedDictionaryIds, rows: DictionaryRow[]) {
   const allowed = new Set(
-    rows
-      .map((row) => Number(row.id ?? 0))
-      .filter((id) => Number.isFinite(id) && id > 0),
-  )
-  list.value = list.value.filter((id) => allowed.has(id))
+    rows.map(row => Number(row.id ?? 0)).filter(id => Number.isFinite(id) && id > 0)
+  );
+  list.value = list.value.filter(id => allowed.has(id));
 }
 
 function updateSelection(list: typeof selectedDictionaryIds, id: number, checked: boolean) {
-  if (!id) return
+  if (!id) return;
   if (checked) {
     if (!list.value.includes(id)) {
-      list.value = [...list.value, id]
+      list.value = [...list.value, id];
     }
-    return
+    return;
   }
-  list.value = list.value.filter((entry) => entry !== id)
+  list.value = list.value.filter(entry => entry !== id);
 }
 
 function toggleDictionaryRowSelection(row: DictionaryRow, event: Event) {
-  if (!canDeleteDictionaryRow(row)) return
-  updateSelection(selectedDictionaryIds, Number(row.id ?? 0), (event.target as HTMLInputElement | null)?.checked ?? false)
+  if (!canDeleteDictionaryRow(row)) return;
+  updateSelection(
+    selectedDictionaryIds,
+    Number(row.id ?? 0),
+    (event.target as HTMLInputElement | null)?.checked ?? false
+  );
 }
 
 function toggleContractTypeRowSelection(row: DictionaryRow, event: Event) {
-  if (!canDeleteDictionaryRow(row)) return
-  updateSelection(selectedContractTypeIds, Number(row.id ?? 0), (event.target as HTMLInputElement | null)?.checked ?? false)
+  if (!canDeleteDictionaryRow(row)) return;
+  updateSelection(
+    selectedContractTypeIds,
+    Number(row.id ?? 0),
+    (event.target as HTMLInputElement | null)?.checked ?? false
+  );
 }
 
 function toggleContractSubtypeRowSelection(row: DictionaryRow, event: Event) {
-  if (!canDeleteDictionaryRow(row)) return
-  updateSelection(selectedContractSubtypeIds, Number(row.id ?? 0), (event.target as HTMLInputElement | null)?.checked ?? false)
+  if (!canDeleteDictionaryRow(row)) return;
+  updateSelection(
+    selectedContractSubtypeIds,
+    Number(row.id ?? 0),
+    (event.target as HTMLInputElement | null)?.checked ?? false
+  );
 }
 
-function toggleSelectionByRows(list: typeof selectedDictionaryIds, rows: DictionaryRow[], event: Event) {
-  const checked = (event.target as HTMLInputElement | null)?.checked ?? false
-  const ids = rows.map((row) => Number(row.id ?? 0)).filter((id) => id > 0)
+function toggleSelectionByRows(
+  list: typeof selectedDictionaryIds,
+  rows: DictionaryRow[],
+  event: Event
+) {
+  const checked = (event.target as HTMLInputElement | null)?.checked ?? false;
+  const ids = rows.map(row => Number(row.id ?? 0)).filter(id => id > 0);
   if (checked) {
-    list.value = Array.from(new Set([...list.value, ...ids]))
-    return
+    list.value = Array.from(new Set([...list.value, ...ids]));
+    return;
   }
-  const idSet = new Set(ids)
-  list.value = list.value.filter((id) => !idSet.has(id))
+  const idSet = new Set(ids);
+  list.value = list.value.filter(id => !idSet.has(id));
 }
 
 function toggleAllDictionaryRowSelection(event: Event) {
-  toggleSelectionByRows(selectedDictionaryIds, selectableDictionaryRows.value, event)
+  toggleSelectionByRows(selectedDictionaryIds, selectableDictionaryRows.value, event);
 }
 
 function toggleAllContractTypeRowSelection(event: Event) {
-  toggleSelectionByRows(selectedContractTypeIds, selectableContractTypeRows.value, event)
+  toggleSelectionByRows(selectedContractTypeIds, selectableContractTypeRows.value, event);
 }
 
 function toggleAllContractSubtypeRowSelection(event: Event) {
-  toggleSelectionByRows(selectedContractSubtypeIds, selectableContractSubtypeRows.value, event)
+  toggleSelectionByRows(selectedContractSubtypeIds, selectableContractSubtypeRows.value, event);
 }
 
 function requestRemoveSelectedDictionaryRows() {
-  if (!canWrite.value || selectedDictionaryIds.value.length === 0) return
+  if (!canWrite.value || selectedDictionaryIds.value.length === 0) return;
   deleteTarget.value = {
     kind: 'dictionaryBatch',
     dictionary: active.value,
     ids: [...selectedDictionaryIds.value],
-  }
-  confirmOpen.value = true
+  };
+  confirmOpen.value = true;
 }
 
 function requestRemoveSelectedContractTypeRows() {
-  if (!canWrite.value || selectedContractTypeIds.value.length === 0) return
+  if (!canWrite.value || selectedContractTypeIds.value.length === 0) return;
   deleteTarget.value = {
     kind: 'dictionaryBatch',
     dictionary: 'contracttypes',
     ids: [...selectedContractTypeIds.value],
-  }
-  confirmOpen.value = true
+  };
+  confirmOpen.value = true;
 }
 
 function requestRemoveSelectedContractSubtypeRows() {
-  if (!canWrite.value || selectedContractSubtypeIds.value.length === 0) return
+  if (!canWrite.value || selectedContractSubtypeIds.value.length === 0) return;
   deleteTarget.value = {
     kind: 'contractSubtypeBatch',
     ids: [...selectedContractSubtypeIds.value],
-  }
-  confirmOpen.value = true
+  };
+  confirmOpen.value = true;
 }
 
 function buildDictionaryPayload() {
-  const payload: Record<string, unknown> = {}
+  const payload: Record<string, unknown> = {};
   for (const field of dictionaryConfig[active.value].fields) {
-    const raw = editorValues[field.key]
+    const raw = editorValues[field.key];
     if (field.type === 'boolean' || field.type === 'number') {
-      payload[field.key] = Number(raw ?? 0)
-      continue
+      payload[field.key] = Number(raw ?? 0);
+      continue;
     }
-    payload[field.key] = String(raw ?? '').trim()
+    payload[field.key] = String(raw ?? '').trim();
   }
   if (active.value === 'statustypes') {
-    payload.color = normalizeHexColor(editorValues.color)
+    payload.color = normalizeHexColor(editorValues.color);
   }
-  return payload
+  return payload;
 }
 
 function hasRequiredText(payload: Record<string, unknown>) {
-  const primaryTextField = editorFields.value.find((field) => field.type === 'text')
-  if (!primaryTextField) return true
-  return String(payload[primaryTextField.key] ?? '').trim().length > 0
+  const primaryTextField = editorFields.value.find(field => field.type === 'text');
+  if (!primaryTextField) return true;
+  return String(payload[primaryTextField.key] ?? '').trim().length > 0;
 }
 
 function normalizeDictionaryConflictText(raw: unknown) {
-  return decodeHtmlEntities(String(raw ?? '')).trim().toLocaleLowerCase()
+  return decodeHtmlEntities(String(raw ?? ''))
+    .trim()
+    .toLocaleLowerCase();
 }
 
 function getDictionaryConflictMessage() {
   if (editorMode.value === 'contractSubtype') {
-    const text = String(editorValues.name ?? '').trim()
-    if (!text) return ''
-    const normalized = normalizeDictionaryConflictText(text)
+    const text = String(editorValues.name ?? '').trim();
+    if (!text) return '';
+    const normalized = normalizeDictionaryConflictText(text);
     const duplicated = contractSubtypeRows.value.some(
-      (row) =>
+      row =>
         Number(row.id ?? 0) !== Number(editingId.value ?? 0) &&
-        normalizeDictionaryConflictText(row.name) === normalized,
-    )
-    return duplicated ? `子类型名称“${text}”已存在` : ''
+        normalizeDictionaryConflictText(row.name) === normalized
+    );
+    return duplicated ? `子类型名称“${text}”已存在` : '';
   }
 
-  const textField = editorFields.value.find((field) => field.type === 'text')
-  if (!textField) return ''
-  const text = String(editorValues[textField.key] ?? '').trim()
-  if (!text) return ''
-  const normalized = normalizeDictionaryConflictText(text)
+  const textField = editorFields.value.find(field => field.type === 'text');
+  if (!textField) return '';
+  const text = String(editorValues[textField.key] ?? '').trim();
+  if (!text) return '';
+  const normalized = normalizeDictionaryConflictText(text);
   const duplicated = activeRows.value.some(
-    (row) =>
+    row =>
       Number(row.id ?? 0) !== Number(editingId.value ?? 0) &&
-      normalizeDictionaryConflictText(row[textField.key]) === normalized,
-  )
-  return duplicated ? `${textField.label}“${text}”已存在` : ''
+      normalizeDictionaryConflictText(row[textField.key]) === normalized
+  );
+  return duplicated ? `${textField.label}“${text}”已存在` : '';
 }
 
 function showEditorError(message: string) {
-  error.value = message
-  noticeStore.error(message)
+  error.value = message;
+  noticeStore.error(message);
 }
 
 async function refreshBootstrapLookups() {
   try {
-    bootstrap.reset()
-    await bootstrap.load()
+    bootstrap.reset();
+    await bootstrap.load();
   } catch {
     // 字典页不阻塞主流程，忽略联动刷新失败
   }
 }
 
 async function saveEditor() {
-  if (!canWrite.value) return
-  saving.value = true
-  error.value = ''
+  if (!canWrite.value) return;
+  saving.value = true;
+  error.value = '';
   try {
-    let recentHistoryID = Number(editingId.value ?? 0)
-    const recentHistoryMode: EditorMode = editorMode.value
+    let recentHistoryID = Number(editingId.value ?? 0);
+    const recentHistoryMode: EditorMode = editorMode.value;
 
     if (editorMode.value === 'contractSubtype') {
-      const typeID = Number(selectedContractTypeId.value ?? 0)
-      if (!typeID) throw new Error('请先选择一个合同类型后再操作子类型')
+      const typeID = Number(selectedContractTypeId.value ?? 0);
+      if (!typeID) throw new Error('请先选择一个合同类型后再操作子类型');
       const payload = {
         contypeid: typeID,
         name: String(editorValues.name ?? '').trim(),
-      }
+      };
       if (!hasRequiredText(payload)) {
-        showEditorError('请填写名称')
-        return
+        showEditorError('请填写名称');
+        return;
       }
-      const conflictMessage = getDictionaryConflictMessage()
+      const conflictMessage = getDictionaryConflictMessage();
       if (conflictMessage) {
-        showEditorError(conflictMessage)
-        return
+        showEditorError(conflictMessage);
+        return;
       }
       if (editingId.value) {
-        await api.put(`/dictionaries/contractsubtypes/${editingId.value}`, payload)
+        await api.put(`/dictionaries/contractsubtypes/${editingId.value}`, payload);
       } else {
-        const { data } = await api.post('/dictionaries/contractsubtypes', payload)
-        recentHistoryID = Number((data as { id?: number | string } | null | undefined)?.id ?? 0)
+        const { data } = await api.post('/dictionaries/contractsubtypes', payload);
+        recentHistoryID = Number((data as { id?: number | string } | null | undefined)?.id ?? 0);
       }
     } else {
-      const payload = buildDictionaryPayload()
+      const payload = buildDictionaryPayload();
       if (!hasRequiredText(payload)) {
-        showEditorError('请填写必填文本字段')
-        return
+        showEditorError('请填写必填文本字段');
+        return;
       }
-      const conflictMessage = getDictionaryConflictMessage()
+      const conflictMessage = getDictionaryConflictMessage();
       if (conflictMessage) {
-        showEditorError(conflictMessage)
-        return
+        showEditorError(conflictMessage);
+        return;
       }
       if (editingId.value) {
-        await api.put(`/dictionaries/${active.value}/${editingId.value}`, payload)
+        await api.put(`/dictionaries/${active.value}/${editingId.value}`, payload);
       } else {
-        const { data } = await api.post(`/dictionaries/${active.value}`, payload)
-        recentHistoryID = Number((data as { id?: number | string } | null | undefined)?.id ?? 0)
+        const { data } = await api.post(`/dictionaries/${active.value}`, payload);
+        recentHistoryID = Number((data as { id?: number | string } | null | undefined)?.id ?? 0);
       }
     }
 
     if (recentHistoryID > 0) {
-      void recordRecentViewHistory(recentHistoryID, recentHistoryMode)
+      void recordRecentViewHistory(recentHistoryID, recentHistoryMode);
     }
-    editorOpen.value = false
-    editingId.value = null
-    await load()
-    await refreshBootstrapLookups()
+    editorOpen.value = false;
+    editingId.value = null;
+    await load();
+    await refreshBootstrapLookups();
   } catch (err: unknown) {
-    const msg = (err as { response?: { data?: { error?: string } }; message?: string })?.response?.data?.error
-    error.value = msg ?? (err as { message?: string })?.message ?? '保存失败'
-    noticeStore.error(error.value)
+    const msg = (err as { response?: { data?: { error?: string } }; message?: string })?.response
+      ?.data?.error;
+    error.value = msg ?? (err as { message?: string })?.message ?? '保存失败';
+    noticeStore.error(error.value);
   } finally {
-    saving.value = false
+    saving.value = false;
   }
 }
 
 async function confirmDelete() {
-  if (!deleteTarget.value || !canWrite.value) return
-  deleting.value = true
-  error.value = ''
-  const target = deleteTarget.value
+  if (!deleteTarget.value || !canWrite.value) return;
+  deleting.value = true;
+  error.value = '';
+  const target = deleteTarget.value;
   try {
     if (target.kind === 'contractSubtypeBatch') {
-      let successCount = 0
-      let failedCount = 0
-      let firstError = ''
+      let successCount = 0;
+      let failedCount = 0;
+      let firstError = '';
       for (const id of target.ids) {
         try {
-          await api.delete(`/dictionaries/contractsubtypes/${id}`)
-          successCount += 1
+          await api.delete(`/dictionaries/contractsubtypes/${id}`);
+          successCount += 1;
         } catch (err: unknown) {
-          failedCount += 1
+          failedCount += 1;
           if (!firstError) {
-            firstError = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? '删除失败'
+            firstError =
+              (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+              '删除失败';
           }
         }
       }
-      selectedContractSubtypeIds.value = []
-      if (successCount > 0) noticeStore.success(`已删除 ${successCount} 条合同子类型`)
-      if (failedCount > 0) noticeStore.error(firstError || `有 ${failedCount} 条合同子类型删除失败`)
+      selectedContractSubtypeIds.value = [];
+      if (successCount > 0) noticeStore.success(`已删除 ${successCount} 条合同子类型`);
+      if (failedCount > 0)
+        noticeStore.error(firstError || `有 ${failedCount} 条合同子类型删除失败`);
     } else if (target.kind === 'dictionaryBatch') {
-      let successCount = 0
-      let failedCount = 0
-      let firstError = ''
+      let successCount = 0;
+      let failedCount = 0;
+      let firstError = '';
       for (const id of target.ids) {
         try {
-          await api.delete(`/dictionaries/${target.dictionary}/${id}`)
-          successCount += 1
+          await api.delete(`/dictionaries/${target.dictionary}/${id}`);
+          successCount += 1;
         } catch (err: unknown) {
-          failedCount += 1
+          failedCount += 1;
           if (!firstError) {
-            firstError = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? '删除失败'
+            firstError =
+              (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+              '删除失败';
           }
         }
       }
       if (target.dictionary === 'contracttypes') {
-        selectedContractTypeIds.value = []
+        selectedContractTypeIds.value = [];
       } else {
-        selectedDictionaryIds.value = []
+        selectedDictionaryIds.value = [];
       }
-      if (successCount > 0) noticeStore.success(`已删除 ${successCount} 条记录`)
-      if (failedCount > 0) noticeStore.error(firstError || `有 ${failedCount} 条记录删除失败`)
+      if (successCount > 0) noticeStore.success(`已删除 ${successCount} 条记录`);
+      if (failedCount > 0) noticeStore.error(firstError || `有 ${failedCount} 条记录删除失败`);
     } else if (target.kind === 'contractSubtype') {
-      await api.delete(`/dictionaries/contractsubtypes/${target.id}`)
-      selectedContractSubtypeIds.value = selectedContractSubtypeIds.value.filter((id) => id !== target.id)
+      await api.delete(`/dictionaries/contractsubtypes/${target.id}`);
+      selectedContractSubtypeIds.value = selectedContractSubtypeIds.value.filter(
+        id => id !== target.id
+      );
     } else {
-      await api.delete(`/dictionaries/${active.value}/${target.id}`)
+      await api.delete(`/dictionaries/${active.value}/${target.id}`);
       if (active.value === 'contracttypes') {
-        selectedContractTypeIds.value = selectedContractTypeIds.value.filter((id) => id !== target.id)
+        selectedContractTypeIds.value = selectedContractTypeIds.value.filter(
+          id => id !== target.id
+        );
       } else {
-        selectedDictionaryIds.value = selectedDictionaryIds.value.filter((id) => id !== target.id)
+        selectedDictionaryIds.value = selectedDictionaryIds.value.filter(id => id !== target.id);
       }
     }
-    confirmOpen.value = false
-    deleteTarget.value = null
-    await load()
-    await refreshBootstrapLookups()
+    confirmOpen.value = false;
+    deleteTarget.value = null;
+    await load();
+    await refreshBootstrapLookups();
   } catch (err: unknown) {
-    error.value = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? '删除失败'
+    error.value =
+      (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? '删除失败';
   } finally {
-    deleting.value = false
+    deleting.value = false;
   }
 }
 
 function displayValue(row: DictionaryRow, field: DictionaryField) {
-  const raw = row[field.key]
-  if (field.type === 'boolean') return Number(raw ?? 0) === 1 ? '是' : '否'
-  return displayText(raw)
+  const raw = row[field.key];
+  if (field.type === 'boolean') return Number(raw ?? 0) === 1 ? '是' : '否';
+  return displayText(raw);
 }
 
 async function load() {
-  loading.value = true
-  error.value = ''
+  loading.value = true;
+  error.value = '';
   try {
-    const { data } = await api.get('/dictionaries')
-    dictionaries.value = data
+    const { data } = await api.get('/dictionaries');
+    dictionaries.value = data;
 
-    const fromRoute = normalizeRouteTab(route.params.tab)
+    const fromRoute = normalizeRouteTab(route.params.tab);
     if (fromRoute && visibleDictionaryNames.value.includes(fromRoute)) {
-      active.value = fromRoute
+      active.value = fromRoute;
     } else if (!visibleDictionaryNames.value.includes(active.value)) {
-      active.value = visibleDictionaryNames.value[0] ?? 'itemtypes'
+      active.value = visibleDictionaryNames.value[0] ?? 'itemtypes';
     }
 
-    syncContractTypeSelection()
-    syncTagSelection()
-    applyRouteQueryActions()
+    syncContractTypeSelection();
+    syncTagSelection();
+    applyRouteQueryActions();
   } catch (err: unknown) {
-    error.value = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? '字典数据加载失败'
+    error.value =
+      (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+      '字典数据加载失败';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 watch(active, () => {
-  closeEditor()
-  closeConfirm()
-  clearDictionarySelections()
-  syncContractTypeSelection()
-})
+  closeEditor();
+  closeConfirm();
+  clearDictionarySelections();
+  syncContractTypeSelection();
+});
 
 watch(activeRows, () => {
-  syncSelection(selectedDictionaryIds, selectableDictionaryRows.value)
-})
+  syncSelection(selectedDictionaryIds, selectableDictionaryRows.value);
+});
 
 watch(contractTypeRows, () => {
-  syncSelection(selectedContractTypeIds, selectableContractTypeRows.value)
-})
+  syncSelection(selectedContractTypeIds, selectableContractTypeRows.value);
+});
 
 watch(contractSubtypeRows, () => {
-  syncSelection(selectedContractSubtypeIds, selectableContractSubtypeRows.value)
-})
+  syncSelection(selectedContractSubtypeIds, selectableContractSubtypeRows.value);
+});
 
 watch(
   () => [route.params.tab, route.query.edit, route.query.subtypeEdit],
   () => {
-    const fromRoute = normalizeRouteTab(route.params.tab)
+    const fromRoute = normalizeRouteTab(route.params.tab);
     if (fromRoute && fromRoute !== active.value) {
-      active.value = fromRoute
-      return
+      active.value = fromRoute;
+      return;
     }
     if (!fromRoute && route.params.tab) {
-      void router.replace({ name: 'dictionaries', params: { tab: active.value } })
-      return
+      void router.replace({ name: 'dictionaries', params: { tab: active.value } });
+      return;
     }
     if (!loading.value && (route.query.edit || route.query.subtypeEdit)) {
-      applyRouteQueryActions()
+      applyRouteQueryActions();
     }
-  },
-)
+  }
+);
 
-void load()
+void load();
 </script>
 
 <template>
@@ -862,7 +933,11 @@ void load()
       <h2>{{ pageTitle }}</h2>
       <div class="header-actions">
         <button class="ghost-btn" @click="load">刷新</button>
-        <button v-if="canWrite && active !== 'contracttypes'" class="dict-add-btn" @click="openCreateDictionaryRow">
+        <button
+          v-if="canWrite && active !== 'contracttypes'"
+          class="dict-add-btn"
+          @click="openCreateDictionaryRow"
+        >
           {{ createDictionaryButtonText }}
         </button>
       </div>
@@ -885,15 +960,24 @@ void load()
 
       <div class="dict-content">
         <template v-if="active === 'contracttypes'">
-          <div class="contract-types-layout" :class="{ 'with-subtypes': Boolean(selectedContractTypeId) }">
+          <div
+            class="contract-types-layout"
+            :class="{ 'with-subtypes': Boolean(selectedContractTypeId) }"
+          >
             <section class="dict-panel contract-type-main-panel">
               <div class="dict-panel-head">
                 <h3>合同类型</h3>
                 <div v-if="canWrite" class="dict-panel-actions">
-                  <button class="small-btn danger" :disabled="selectedContractTypeIds.length === 0" @click="requestRemoveSelectedContractTypeRows">
+                  <button
+                    class="small-btn danger"
+                    :disabled="selectedContractTypeIds.length === 0"
+                    @click="requestRemoveSelectedContractTypeRows"
+                  >
                     批量删除（{{ selectedContractTypeIds.length }}）
                   </button>
-                  <button class="small-btn dict-add-btn" @click="openCreateDictionaryRow">新增合同类型</button>
+                  <button class="small-btn dict-add-btn" @click="openCreateDictionaryRow">
+                    新增合同类型
+                  </button>
                 </div>
               </div>
               <div class="table-wrap">
@@ -929,12 +1013,29 @@ void load()
                       </td>
                       <td>{{ row.id }}</td>
                       <td>{{ displayText(row.name) }}</td>
-                    <td class="actions-cell">
-                      <button class="small-btn ghost-btn" @click="selectContractType(Number(row.id ?? 0))">查看/编辑 子类型</button>
-                      <button v-if="canWrite" class="small-btn" @click="openEditDictionaryRow(row)">编辑</button>
-                      <button v-if="canWrite" class="small-btn danger" @click="requestRemoveDictionaryRow(row)">删除</button>
-                    </td>
-                  </tr>
+                      <td class="actions-cell">
+                        <button
+                          class="small-btn ghost-btn"
+                          @click="selectContractType(Number(row.id ?? 0))"
+                        >
+                          查看/编辑 子类型
+                        </button>
+                        <button
+                          v-if="canWrite"
+                          class="small-btn"
+                          @click="openEditDictionaryRow(row)"
+                        >
+                          编辑
+                        </button>
+                        <button
+                          v-if="canWrite"
+                          class="small-btn danger"
+                          @click="requestRemoveDictionaryRow(row)"
+                        >
+                          删除
+                        </button>
+                      </td>
+                    </tr>
                     <tr v-if="contractTypeRows.length === 0">
                       <td :colspan="canWrite ? 4 : 3">暂无合同类型数据</td>
                     </tr>
@@ -954,7 +1055,9 @@ void load()
                   >
                     批量删除（{{ selectedContractSubtypeIds.length }}）
                   </button>
-                  <button class="small-btn dict-add-btn" @click="openCreateSubtypeRow">新增子类型</button>
+                  <button class="small-btn dict-add-btn" @click="openCreateSubtypeRow">
+                    新增子类型
+                  </button>
                 </div>
               </div>
               <div class="table-wrap">
@@ -986,11 +1089,19 @@ void load()
                       </td>
                       <td>{{ row.id }}</td>
                       <td>{{ displayText(row.name) }}</td>
-                    <td class="actions-cell">
-                      <button v-if="canWrite" class="small-btn" @click="openEditSubtypeRow(row)">编辑</button>
-                      <button v-if="canWrite" class="small-btn danger" @click="requestRemoveSubtypeRow(Number(row.id ?? 0))">删除</button>
-                    </td>
-                  </tr>
+                      <td class="actions-cell">
+                        <button v-if="canWrite" class="small-btn" @click="openEditSubtypeRow(row)">
+                          编辑
+                        </button>
+                        <button
+                          v-if="canWrite"
+                          class="small-btn danger"
+                          @click="requestRemoveSubtypeRow(Number(row.id ?? 0))"
+                        >
+                          删除
+                        </button>
+                      </td>
+                    </tr>
                     <tr v-if="contractSubtypeRows.length === 0">
                       <td :colspan="canWrite ? 4 : 3">暂无合同子类型数据</td>
                     </tr>
@@ -1007,7 +1118,11 @@ void load()
               <div class="dict-panel-head">
                 <h3>标记</h3>
                 <div v-if="canWrite" class="dict-panel-actions">
-                  <button class="small-btn danger" :disabled="selectedDictionaryIds.length === 0" @click="requestRemoveSelectedDictionaryRows">
+                  <button
+                    class="small-btn danger"
+                    :disabled="selectedDictionaryIds.length === 0"
+                    @click="requestRemoveSelectedDictionaryRows"
+                  >
                     批量删除（{{ selectedDictionaryIds.length }}）
                   </button>
                 </div>
@@ -1044,18 +1159,38 @@ void load()
                       <td>{{ row.id }}</td>
                       <td>{{ displayText(row.name) }}</td>
                       <td>
-                        <a class="tag-count-link" href="#" @click.prevent="showTagRelated(row, 'items')">
+                        <a
+                          class="tag-count-link"
+                          href="#"
+                          @click.prevent="showTagRelated(row, 'items')"
+                        >
                           {{ readTagCount(row, 'itemCount') }}
                         </a>
                       </td>
                       <td>
-                        <a class="tag-count-link" href="#" @click.prevent="showTagRelated(row, 'software')">
+                        <a
+                          class="tag-count-link"
+                          href="#"
+                          @click.prevent="showTagRelated(row, 'software')"
+                        >
                           {{ readTagCount(row, 'softwareCount') }}
                         </a>
                       </td>
                       <td v-if="canWrite" class="actions-cell">
-                        <button v-if="canMutateDictionaryRow(row)" class="small-btn" @click="openEditDictionaryRow(row)">编辑</button>
-                        <button v-if="canMutateDictionaryRow(row)" class="small-btn danger" @click="requestRemoveDictionaryRow(row)">删除</button>
+                        <button
+                          v-if="canMutateDictionaryRow(row)"
+                          class="small-btn"
+                          @click="openEditDictionaryRow(row)"
+                        >
+                          编辑
+                        </button>
+                        <button
+                          v-if="canMutateDictionaryRow(row)"
+                          class="small-btn danger"
+                          @click="requestRemoveDictionaryRow(row)"
+                        >
+                          删除
+                        </button>
                       </td>
                     </tr>
                     <tr v-if="activeRows.length === 0">
@@ -1084,7 +1219,9 @@ void load()
                         :key="`tag-related-${tagRelatedTarget}-${entry.id}-${index}`"
                         class="tag-related-link"
                         href="#"
-                        @click.prevent="openTagRelatedEntry(tagRelatedTarget, Number(entry.id ?? 0))"
+                        @click.prevent="
+                          openTagRelatedEntry(tagRelatedTarget, Number(entry.id ?? 0))
+                        "
                       >
                         <span class="tag-related-index">{{ index + 1 }}:</span>
                         <span class="tag-related-text">{{ displayText(entry.txt) }}</span>
@@ -1102,7 +1239,11 @@ void load()
             <div class="dict-panel-head">
               <h3>{{ dictionaryConfig[active].title }}</h3>
               <div v-if="canWrite" class="dict-panel-actions">
-                <button class="small-btn danger" :disabled="selectedDictionaryIds.length === 0" @click="requestRemoveSelectedDictionaryRows">
+                <button
+                  class="small-btn danger"
+                  :disabled="selectedDictionaryIds.length === 0"
+                  @click="requestRemoveSelectedDictionaryRows"
+                >
                   批量删除（{{ selectedDictionaryIds.length }}）
                 </button>
               </div>
@@ -1120,7 +1261,9 @@ void load()
                       />
                     </th>
                     <th>编号</th>
-                    <th v-for="field in dictionaryConfig[active].fields" :key="`head-${field.key}`">{{ field.label }}</th>
+                    <th v-for="field in dictionaryConfig[active].fields" :key="`head-${field.key}`">
+                      {{ field.label }}
+                    </th>
                     <th class="dict-main-actions-col">操作</th>
                   </tr>
                 </thead>
@@ -1135,9 +1278,18 @@ void load()
                       />
                     </td>
                     <td>{{ row.id }}</td>
-                    <td v-for="field in dictionaryConfig[active].fields" :key="`${active}-${String(row.id ?? '')}-${field.key}`">
-                      <span v-if="active === 'statustypes' && field.key === 'statusdesc'" class="status-type-cell">
-                        <span class="status-type-color-dot" :style="{ backgroundColor: getStatusTypeColor(row) }"></span>
+                    <td
+                      v-for="field in dictionaryConfig[active].fields"
+                      :key="`${active}-${String(row.id ?? '')}-${field.key}`"
+                    >
+                      <span
+                        v-if="active === 'statustypes' && field.key === 'statusdesc'"
+                        class="status-type-cell"
+                      >
+                        <span
+                          class="status-type-color-dot"
+                          :style="{ backgroundColor: getStatusTypeColor(row) }"
+                        ></span>
                         <span>{{ displayValue(row, field) }}</span>
                       </span>
                       <template v-else>
@@ -1145,7 +1297,13 @@ void load()
                       </template>
                     </td>
                     <td class="actions-cell dict-main-actions-cell">
-                      <button v-if="canWrite && canMutateDictionaryRow(row)" class="small-btn" @click="openEditDictionaryRow(row)">编辑</button>
+                      <button
+                        v-if="canWrite && canMutateDictionaryRow(row)"
+                        class="small-btn"
+                        @click="openEditDictionaryRow(row)"
+                      >
+                        编辑
+                      </button>
                       <button
                         v-if="canWrite && canMutateDictionaryRow(row)"
                         class="small-btn danger"
@@ -1156,7 +1314,9 @@ void load()
                     </td>
                   </tr>
                   <tr v-if="activeRows.length === 0">
-                    <td :colspan="dictionaryConfig[active].fields.length + (canWrite ? 3 : 2)">暂无数据</td>
+                    <td :colspan="dictionaryConfig[active].fields.length + (canWrite ? 3 : 2)">
+                      暂无数据
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -1170,7 +1330,15 @@ void load()
       <section class="drawer modal-narrow" role="dialog" aria-modal="true">
         <div class="drawer-header">
           <h3>{{ editorTitle }}</h3>
-          <button class="dialog-close-btn quick-tip" type="button" aria-label="关闭" data-quick-tip="关闭" @click="closeEditor">×</button>
+          <button
+            class="dialog-close-btn quick-tip"
+            type="button"
+            aria-label="关闭"
+            data-quick-tip="关闭"
+            @click="closeEditor"
+          >
+            ×
+          </button>
         </div>
         <form class="drawer-form" @submit.prevent="saveEditor">
           <label v-for="field in editorFields" :key="`editor-${field.key}`">
@@ -1179,17 +1347,28 @@ void load()
               <option :value="0">否</option>
               <option :value="1">是</option>
             </select>
-            <input v-else v-model="editorValues[field.key]" :type="field.type === 'number' ? 'number' : 'text'" />
+            <input
+              v-else
+              v-model="editorValues[field.key]"
+              :type="field.type === 'number' ? 'number' : 'text'"
+            />
           </label>
-          <div v-if="editorMode === 'dictionary' && active === 'statustypes'" class="status-color-field">
+          <div
+            v-if="editorMode === 'dictionary' && active === 'statustypes'"
+            class="status-color-field"
+          >
             <span>颜色</span>
             <input v-model="editorValues.color" type="color" class="status-color-picker" />
           </div>
 
-          <p v-if="editorMode === 'contractSubtype'" class="muted-text">当前合同类型编号：{{ selectedContractTypeId }}</p>
+          <p v-if="editorMode === 'contractSubtype'" class="muted-text">
+            当前合同类型编号：{{ selectedContractTypeId }}
+          </p>
 
           <div class="inline-actions">
-            <button :disabled="saving" type="submit">{{ saving ? '保存中...' : editingId ? '保存修改' : '新增' }}</button>
+            <button :disabled="saving" type="submit">
+              {{ saving ? '保存中...' : editingId ? '保存修改' : '新增' }}
+            </button>
             <button class="ghost-btn" type="button" @click="closeEditor">取消</button>
           </div>
         </form>
@@ -1200,7 +1379,15 @@ void load()
       <section class="drawer modal-narrow" role="dialog" aria-modal="true">
         <div class="drawer-header">
           <h3>删除确认</h3>
-          <button class="dialog-close-btn quick-tip" type="button" aria-label="关闭" data-quick-tip="关闭" @click="closeConfirm">×</button>
+          <button
+            class="dialog-close-btn quick-tip"
+            type="button"
+            aria-label="关闭"
+            data-quick-tip="关闭"
+            @click="closeConfirm"
+          >
+            ×
+          </button>
         </div>
         <div class="drawer-form">
           <p>{{ confirmMessage }}</p>
@@ -1208,7 +1395,9 @@ void load()
             <button class="danger" type="button" :disabled="deleting" @click="confirmDelete">
               {{ deleting ? '删除中...' : '确认删除' }}
             </button>
-            <button class="ghost-btn" type="button" :disabled="deleting" @click="closeConfirm">取消</button>
+            <button class="ghost-btn" type="button" :disabled="deleting" @click="closeConfirm">
+              取消
+            </button>
           </div>
         </div>
       </section>

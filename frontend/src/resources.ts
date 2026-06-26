@@ -1,25 +1,33 @@
-﻿export type FieldType = 'text' | 'number' | 'textarea' | 'date' | 'select' | 'multiselect' | 'password' | 'file'
+﻿export type FieldType =
+  | 'text'
+  | 'number'
+  | 'textarea'
+  | 'date'
+  | 'select'
+  | 'multiselect'
+  | 'password'
+  | 'file';
 
 export type ResourceField = {
-  key: string
-  label: string
-  type: FieldType
-  required?: boolean
-  options?: { label: string; value: string | number }[]
-  optionsKey?: string
-  readKey?: string
-}
+  key: string;
+  label: string;
+  type: FieldType;
+  required?: boolean;
+  options?: { label: string; value: string | number }[];
+  optionsKey?: string;
+  readKey?: string;
+};
 
 export type ResourceConfig = {
-  key: string
-  title: string
-  endpoint: string
-  columns: { key: string; label: string; tooltip?: string }[]
-  fields: ResourceField[]
-  multipart?: boolean
-  readonly?: boolean
-  actionHeader?: string
-}
+  key: string;
+  title: string;
+  endpoint: string;
+  columns: { key: string; label: string; tooltip?: string }[];
+  fields: ResourceField[];
+  multipart?: boolean;
+  readonly?: boolean;
+  actionHeader?: string;
+};
 
 export const resources: ResourceConfig[] = [
   {
@@ -48,10 +56,30 @@ export const resources: ResourceConfig[] = [
     ],
     fields: [
       { key: 'label', label: '标签', type: 'text' },
-      { key: 'itemTypeId', readKey: 'itemtypeid', label: '硬件类型', type: 'select', required: true, optionsKey: 'itemtypes' },
+      {
+        key: 'itemTypeId',
+        readKey: 'itemtypeid',
+        label: '硬件类型',
+        type: 'select',
+        required: true,
+        optionsKey: 'itemtypes',
+      },
       { key: 'isPart', readKey: 'ispart', label: '从属部件', type: 'number', required: true },
-      { key: 'rackMountable', readKey: 'rackmountable', label: '机架式', type: 'number', required: true },
-      { key: 'manufacturerId', readKey: 'manufacturerid', label: '厂商', type: 'select', required: true, optionsKey: 'agents' },
+      {
+        key: 'rackMountable',
+        readKey: 'rackmountable',
+        label: '机架式',
+        type: 'number',
+        required: true,
+      },
+      {
+        key: 'manufacturerId',
+        readKey: 'manufacturerid',
+        label: '厂商',
+        type: 'select',
+        required: true,
+        optionsKey: 'agents',
+      },
       { key: 'model', label: '型号', type: 'text', required: true },
       { key: 'uSize', readKey: 'usize', label: '大小(U)', type: 'number' },
       { key: 'sn', label: '设备序列号', type: 'text' },
@@ -59,10 +87,29 @@ export const resources: ResourceConfig[] = [
       { key: 'sn3', label: 'Service Tag', type: 'text' },
       { key: 'comments', label: '注释', type: 'textarea' },
       { key: 'principal', label: '负责人', type: 'text', required: true },
-      { key: 'status', readKey: 'status', label: '状态', type: 'select', required: true, optionsKey: 'statustypes' },
+      {
+        key: 'status',
+        readKey: 'status',
+        label: '状态',
+        type: 'select',
+        required: true,
+        optionsKey: 'statustypes',
+      },
       { key: 'dptId', readKey: 'dptid', label: '所属部门', type: 'select', optionsKey: 'dpttypes' },
-      { key: 'locationId', readKey: 'locationid', label: '地点', type: 'select', optionsKey: 'locations' },
-      { key: 'locAreaId', readKey: 'locareaid', label: '区域/房间', type: 'select', optionsKey: 'locareas' },
+      {
+        key: 'locationId',
+        readKey: 'locationid',
+        label: '地点',
+        type: 'select',
+        optionsKey: 'locations',
+      },
+      {
+        key: 'locAreaId',
+        readKey: 'locareaid',
+        label: '区域/房间',
+        type: 'select',
+        optionsKey: 'locareas',
+      },
       { key: 'rackId', readKey: 'rackid', label: '机架', type: 'select', optionsKey: 'racks' },
       { key: 'rackPosition', readKey: 'rackposition', label: '机架位置', type: 'number' },
       { key: 'rackPosDepth', readKey: 'rackposdepth', label: '机架深度位', type: 'number' },
@@ -85,7 +132,13 @@ export const resources: ResourceConfig[] = [
       { key: 'remAdmIp', readKey: 'remadmip', label: '远程管理IP', type: 'text' },
       { key: 'dnsName', readKey: 'dnsname', label: '管理跳线', type: 'text' },
       { key: 'panelPort', readKey: 'panelport', label: 'Bond名称', type: 'text' },
-      { key: 'switchId', readKey: 'switchid', label: '交换机', type: 'select', optionsKey: 'items_ref' },
+      {
+        key: 'switchId',
+        readKey: 'switchid',
+        label: '交换机',
+        type: 'select',
+        optionsKey: 'items_ref',
+      },
       { key: 'switchPort', readKey: 'switchport', label: '业务跳线', type: 'text' },
       { key: 'ports', label: '网络端口', type: 'text' },
       { key: 'purchPrice', readKey: 'purchprice', label: '采购价格(￥)', type: 'text' },
@@ -119,7 +172,14 @@ export const resources: ResourceConfig[] = [
     fields: [
       { key: 'title', readKey: 'stitle', label: '标题', type: 'text', required: true },
       { key: 'version', readKey: 'sversion', label: '版本', type: 'text', required: true },
-      { key: 'manufacturerId', readKey: 'manufacturerid', label: '厂商', type: 'select', required: true, optionsKey: 'agents' },
+      {
+        key: 'manufacturerId',
+        readKey: 'manufacturerid',
+        label: '厂商',
+        type: 'select',
+        required: true,
+        optionsKey: 'agents',
+      },
       { key: 'purchaseDate', readKey: 'purchdate', label: '采购日期', type: 'date' },
       { key: 'licenseQty', readKey: 'licqty', label: '授权数量', type: 'number' },
       {
@@ -157,8 +217,22 @@ export const resources: ResourceConfig[] = [
     ],
     fields: [
       { key: 'number', label: '订单编号', type: 'text', required: true },
-      { key: 'vendorId', readKey: 'vendorid', label: '供应商', type: 'select', required: true, optionsKey: 'agents' },
-      { key: 'buyerId', readKey: 'buyerid', label: '采购方', type: 'select', required: true, optionsKey: 'agents' },
+      {
+        key: 'vendorId',
+        readKey: 'vendorid',
+        label: '供应商',
+        type: 'select',
+        required: true,
+        optionsKey: 'agents',
+      },
+      {
+        key: 'buyerId',
+        readKey: 'buyerid',
+        label: '采购方',
+        type: 'select',
+        required: true,
+        optionsKey: 'agents',
+      },
       { key: 'date', readKey: 'date', label: '日期', type: 'date', required: true },
       { key: 'description', label: '描述', type: 'textarea' },
       { key: 'itemLinks', label: '关联硬件', type: 'multiselect', optionsKey: 'items_ref' },
@@ -211,7 +285,14 @@ export const resources: ResourceConfig[] = [
     ],
     fields: [
       { key: 'title', label: '标题', type: 'text', required: true },
-      { key: 'typeId', readKey: 'type', label: '类型', type: 'select', required: true, optionsKey: 'filetypes' },
+      {
+        key: 'typeId',
+        readKey: 'type',
+        label: '类型',
+        type: 'select',
+        required: true,
+        optionsKey: 'filetypes',
+      },
       { key: 'date', readKey: 'date', label: '签署日期', type: 'date', required: true },
       { key: 'file', label: '上传文件', type: 'file' },
       { key: 'itemLinks', label: '关联硬件', type: 'multiselect', optionsKey: 'items_ref' },
@@ -237,12 +318,44 @@ export const resources: ResourceConfig[] = [
     fields: [
       { key: 'title', label: '标题', type: 'text', required: true },
       { key: 'number', label: '数量', type: 'text', required: true },
-      { key: 'typeId', readKey: 'type', label: '合同类型', type: 'select', required: true, optionsKey: 'contracttypes' },
-      { key: 'subTypeId', readKey: 'subtype', label: '合同子类型', type: 'select', optionsKey: 'contractsubtypes' },
-      { key: 'parentId', readKey: 'parentid', label: '上级合同', type: 'select', optionsKey: 'contracts_ref' },
-      { key: 'contractorId', readKey: 'contractorid', label: '承包方', type: 'select', required: true, optionsKey: 'agents' },
+      {
+        key: 'typeId',
+        readKey: 'type',
+        label: '合同类型',
+        type: 'select',
+        required: true,
+        optionsKey: 'contracttypes',
+      },
+      {
+        key: 'subTypeId',
+        readKey: 'subtype',
+        label: '合同子类型',
+        type: 'select',
+        optionsKey: 'contractsubtypes',
+      },
+      {
+        key: 'parentId',
+        readKey: 'parentid',
+        label: '上级合同',
+        type: 'select',
+        optionsKey: 'contracts_ref',
+      },
+      {
+        key: 'contractorId',
+        readKey: 'contractorid',
+        label: '承包方',
+        type: 'select',
+        required: true,
+        optionsKey: 'agents',
+      },
       { key: 'startDate', readKey: 'startdate', label: '开始日期', type: 'date', required: true },
-      { key: 'currentEndDate', readKey: 'currentenddate', label: '结束日期', type: 'date', required: true },
+      {
+        key: 'currentEndDate',
+        readKey: 'currentenddate',
+        label: '结束日期',
+        type: 'date',
+        required: true,
+      },
       { key: 'renewals', label: '续签信息', type: 'text' },
       { key: 'totalCost', readKey: 'totalcost', label: '总成本', type: 'text' },
       { key: 'description', label: '合同描述', type: 'textarea' },
@@ -314,8 +427,21 @@ export const resources: ResourceConfig[] = [
     ],
     fields: [
       { key: 'label', label: '标签', type: 'text', required: true },
-      { key: 'locationId', readKey: 'locationid', label: '地点', type: 'select', required: true, optionsKey: 'locations' },
-      { key: 'locAreaId', readKey: 'locareaid', label: '区域', type: 'select', optionsKey: 'locareas' },
+      {
+        key: 'locationId',
+        readKey: 'locationid',
+        label: '地点',
+        type: 'select',
+        required: true,
+        optionsKey: 'locations',
+      },
+      {
+        key: 'locAreaId',
+        readKey: 'locareaid',
+        label: '区域',
+        type: 'select',
+        optionsKey: 'locareas',
+      },
       { key: 'uSize', readKey: 'usize', label: '高度(U)*', type: 'number', required: true },
       { key: 'depth', label: '深度(mm)', type: 'number', required: true },
       { key: 'model', label: '型号', type: 'text' },
@@ -332,6 +458,9 @@ export const resources: ResourceConfig[] = [
       { key: 'comments', label: '注释', type: 'textarea' },
     ],
   },
-]
+];
 
-export const resourceMap = Object.fromEntries(resources.map((r) => [r.key, r])) as Record<string, ResourceConfig>
+export const resourceMap = Object.fromEntries(resources.map(r => [r.key, r])) as Record<
+  string,
+  ResourceConfig
+>;

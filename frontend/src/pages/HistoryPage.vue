@@ -1,13 +1,13 @@
 ﻿<script setup lang="ts">
-import { computed, ref } from 'vue'
-import api from '../api/client'
+import { computed, ref } from 'vue';
+import api from '../api/client';
 
 type HistoryResponse = {
-  rows: Array<Record<string, unknown>>
-  total: number
-  limit: number
-  offset: number
-}
+  rows: Array<Record<string, unknown>>;
+  total: number;
+  limit: number;
+  offset: number;
+};
 
 const text = {
   title: '操作日志',
@@ -28,71 +28,76 @@ const text = {
   prev: '上一页',
   next: '下一页',
   last: '末页',
-} as const
+} as const;
 
-const rows = ref<Array<Record<string, unknown>>>([])
-const loading = ref(false)
-const error = ref('')
-const search = ref('')
-const total = ref(0)
-const limit = ref(25)
-const offset = ref(0)
-const exporting = ref(false)
-const pageSizeOptions = [10, 25, 50, 100]
-let loadSeq = 0
+const rows = ref<Array<Record<string, unknown>>>([]);
+const loading = ref(false);
+const error = ref('');
+const search = ref('');
+const total = ref(0);
+const limit = ref(25);
+const offset = ref(0);
+const exporting = ref(false);
+const pageSizeOptions = [10, 25, 50, 100];
+let loadSeq = 0;
 
 function getInputValue(event: Event) {
-  const target = event.target as HTMLInputElement | HTMLSelectElement | null
-  return target?.value ?? ''
+  const target = event.target as HTMLInputElement | HTMLSelectElement | null;
+  return target?.value ?? '';
 }
 
 function onSearchInput(event: Event) {
-  search.value = getInputValue(event)
-  void load(0)
+  search.value = getInputValue(event);
+  void load(0);
 }
 
 function onLimitChange(event: Event) {
-  const next = Number(getInputValue(event))
-  if (!Number.isFinite(next) || !pageSizeOptions.includes(next)) return
-  limit.value = next
-  void load(0, next)
+  const next = Number(getInputValue(event));
+  if (!Number.isFinite(next) || !pageSizeOptions.includes(next)) return;
+  limit.value = next;
+  void load(0, next);
 }
 
 function asDate(value: unknown) {
-  const n = Number(value)
-  if (!n) return '-'
-  const d = new Date(n * 1000)
+  const n = Number(value);
+  if (!n) return '-';
+  const d = new Date(n * 1000);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(
-    d.getHours(),
-  ).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`
+    d.getHours()
+  ).padStart(
+    2,
+    '0'
+  )}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
 }
 
-const totalPages = computed(() => Math.max(1, Math.ceil(total.value / Math.max(limit.value, 1))))
-const page = computed(() => Math.floor(offset.value / Math.max(limit.value, 1)) + 1)
-const rangeStart = computed(() => (total.value > 0 ? offset.value + 1 : 0))
-const rangeEnd = computed(() => (total.value > 0 ? Math.min(offset.value + limit.value, total.value) : 0))
+const totalPages = computed(() => Math.max(1, Math.ceil(total.value / Math.max(limit.value, 1))));
+const page = computed(() => Math.floor(offset.value / Math.max(limit.value, 1)) + 1);
+const rangeStart = computed(() => (total.value > 0 ? offset.value + 1 : 0));
+const rangeEnd = computed(() =>
+  total.value > 0 ? Math.min(offset.value + limit.value, total.value) : 0
+);
 
 const visiblePages = computed(() => {
-  const pages: number[] = []
-  const maxButtons = 5
-  const totalPageCount = totalPages.value
-  const current = page.value
-  let start = Math.max(1, current - Math.floor(maxButtons / 2))
-  let end = Math.min(totalPageCount, start + maxButtons - 1)
+  const pages: number[] = [];
+  const maxButtons = 5;
+  const totalPageCount = totalPages.value;
+  const current = page.value;
+  let start = Math.max(1, current - Math.floor(maxButtons / 2));
+  let end = Math.min(totalPageCount, start + maxButtons - 1);
   if (end - start + 1 < maxButtons) {
-    start = Math.max(1, end - maxButtons + 1)
+    start = Math.max(1, end - maxButtons + 1);
   }
   for (let i = start; i <= end; i += 1) {
-    pages.push(i)
+    pages.push(i);
   }
-  return pages
-})
+  return pages;
+});
 
 async function load(newOffset = 0, newLimit?: number) {
-  const seq = ++loadSeq
-  loading.value = true
-  error.value = ''
-  const reqLimit = newLimit ?? limit.value
+  const seq = ++loadSeq;
+  loading.value = true;
+  error.value = '';
+  const reqLimit = newLimit ?? limit.value;
   try {
     const { data } = await api.get<HistoryResponse>('/history', {
       params: {
@@ -100,80 +105,87 @@ async function load(newOffset = 0, newLimit?: number) {
         limit: reqLimit,
         offset: newOffset,
       },
-    })
-    if (seq !== loadSeq) return
-    rows.value = data.rows
-    total.value = data.total
-    offset.value = data.offset
-    limit.value = Number(data.limit) > 0 ? Number(data.limit) : reqLimit
+    });
+    if (seq !== loadSeq) return;
+    rows.value = data.rows;
+    total.value = data.total;
+    offset.value = data.offset;
+    limit.value = Number(data.limit) > 0 ? Number(data.limit) : reqLimit;
   } catch (err: unknown) {
-    if (seq !== loadSeq) return
-    error.value = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? text.historyLoadFailed
+    if (seq !== loadSeq) return;
+    error.value =
+      (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+      text.historyLoadFailed;
   } finally {
-    if (seq !== loadSeq) return
-    loading.value = false
+    if (seq !== loadSeq) return;
+    loading.value = false;
   }
 }
 
 function setPage(target: number) {
-  const nextPage = Math.min(Math.max(1, target), totalPages.value)
-  const nextOffset = (nextPage - 1) * limit.value
-  return load(nextOffset)
+  const nextPage = Math.min(Math.max(1, target), totalPages.value);
+  const nextOffset = (nextPage - 1) * limit.value;
+  return load(nextOffset);
 }
 
 function nextPage() {
-  if (page.value >= totalPages.value) return
-  void setPage(page.value + 1)
+  if (page.value >= totalPages.value) return;
+  void setPage(page.value + 1);
 }
 
 function prevPage() {
-  if (page.value <= 1) return
-  void setPage(page.value - 1)
+  if (page.value <= 1) return;
+  void setPage(page.value - 1);
 }
 
 function resolveFileName(disposition: unknown) {
-  if (typeof disposition !== 'string') return ''
-  const utf8 = disposition.match(/filename\*=UTF-8''([^;]+)/i)
+  if (typeof disposition !== 'string') return '';
+  const utf8 = disposition.match(/filename\*=UTF-8''([^;]+)/i);
   if (utf8?.[1]) {
     try {
-      return decodeURIComponent(utf8[1])
+      return decodeURIComponent(utf8[1]);
     } catch {
-      return utf8[1]
+      return utf8[1];
     }
   }
-  const plain = disposition.match(/filename="?([^";]+)"?/i)
-  return plain?.[1] ?? ''
+  const plain = disposition.match(/filename="?([^";]+)"?/i);
+  return plain?.[1] ?? '';
 }
 
 async function exportExcel() {
-  if (exporting.value) return
-  exporting.value = true
-  error.value = ''
+  if (exporting.value) return;
+  exporting.value = true;
+  error.value = '';
   try {
     const response = await api.get('/history/export', {
       params: { search: search.value || undefined },
       responseType: 'blob',
-    })
-    const fileName = resolveFileName(response.headers['content-disposition']) || `history_${Date.now()}.xlsx`
+    });
+    const fileName =
+      resolveFileName(response.headers['content-disposition']) || `history_${Date.now()}.xlsx`;
     const blob = new Blob([response.data], {
-      type: response.headers['content-type'] || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = fileName
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    URL.revokeObjectURL(url)
+      type:
+        response.headers['content-type'] ||
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
   } catch (err: unknown) {
-    error.value = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? text.exportFailed
+    error.value =
+      (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+      text.exportFailed;
   } finally {
-    exporting.value = false
+    exporting.value = false;
   }
 }
 
-load(0)
+load(0);
 </script>
 
 <template>
@@ -192,7 +204,9 @@ load(0)
             @compositionend="onSearchInput"
           />
         </div>
-        <button class="ghost-btn" :disabled="loading || exporting" @click="load(0)">{{ text.refresh }}</button>
+        <button class="ghost-btn" :disabled="loading || exporting" @click="load(0)">
+          {{ text.refresh }}
+        </button>
         <button class="ghost-btn" :disabled="loading || exporting" @click="exportExcel">
           {{ exporting ? text.exporting : text.exportExcel }}
         </button>
@@ -205,13 +219,20 @@ load(0)
       <label class="length-control">
         {{ text.display }}
         <select :value="String(limit)" @change="onLimitChange">
-          <option v-for="size in pageSizeOptions" :key="`history-page-size-${size}`" :value="String(size)">
+          <option
+            v-for="size in pageSizeOptions"
+            :key="`history-page-size-${size}`"
+            :value="String(size)"
+          >
             {{ size }}
           </option>
         </select>
         {{ text.rowsUnit }}
       </label>
-      <span class="table-meta">{{ text.total }} {{ total }} {{ text.rowsUnit }}，{{ text.current }} {{ rangeStart }} - {{ rangeEnd }} {{ text.rowsUnit }}</span>
+      <span class="table-meta"
+        >{{ text.total }} {{ total }} {{ text.rowsUnit }}，{{ text.current }} {{ rangeStart }} -
+        {{ rangeEnd }} {{ text.rowsUnit }}</span
+      >
     </div>
 
     <div v-if="!loading" class="table-wrap">
@@ -240,9 +261,16 @@ load(0)
       </table>
     </div>
 
-    <div class="table-pagination history-pagination section-gap" v-if="!loading && total > 0 && totalPages > 1">
-      <button class="ghost-btn small-btn" :disabled="page <= 1" @click="setPage(1)">{{ text.first }}</button>
-      <button class="ghost-btn small-btn" :disabled="page <= 1" @click="prevPage">{{ text.prev }}</button>
+    <div
+      class="table-pagination history-pagination section-gap"
+      v-if="!loading && total > 0 && totalPages > 1"
+    >
+      <button class="ghost-btn small-btn" :disabled="page <= 1" @click="setPage(1)">
+        {{ text.first }}
+      </button>
+      <button class="ghost-btn small-btn" :disabled="page <= 1" @click="prevPage">
+        {{ text.prev }}
+      </button>
       <button
         v-for="p in visiblePages"
         :key="`history-page-${p}`"
@@ -252,8 +280,16 @@ load(0)
       >
         {{ p }}
       </button>
-      <button class="ghost-btn small-btn" :disabled="page >= totalPages" @click="nextPage">{{ text.next }}</button>
-      <button class="ghost-btn small-btn" :disabled="page >= totalPages" @click="setPage(totalPages)">{{ text.last }}</button>
+      <button class="ghost-btn small-btn" :disabled="page >= totalPages" @click="nextPage">
+        {{ text.next }}
+      </button>
+      <button
+        class="ghost-btn small-btn"
+        :disabled="page >= totalPages"
+        @click="setPage(totalPages)"
+      >
+        {{ text.last }}
+      </button>
     </div>
   </section>
 </template>

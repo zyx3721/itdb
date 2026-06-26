@@ -1,259 +1,265 @@
 ﻿<script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
-import { useNoticeStore } from '../stores/notice'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '../stores/auth';
+import { useNoticeStore } from '../stores/notice';
 
-const router = useRouter()
-const auth = useAuthStore()
-const noticeStore = useNoticeStore()
+const router = useRouter();
+const auth = useAuthStore();
+const noticeStore = useNoticeStore();
 
-const USERNAME_CACHE_KEY = 'itdb_login_username'
-const REMEMBER_FLAG_KEY = 'itdb_login_remember'
+const USERNAME_CACHE_KEY = 'itdb_login_username';
+const REMEMBER_FLAG_KEY = 'itdb_login_remember';
 
-const username = ref('')
-const password = ref('')
-const rememberMe = ref(false)
-const loading = ref(false)
-const showPassword = ref(false)
-const loginMode = ref<'local' | 'ldap'>('local')
-const activeField = ref<'username' | 'password' | null>(null)
-const usernamePhase = ref<'glance' | 'focus' | null>(null)
-let usernamePhaseTimerId = 0
+const username = ref('');
+const password = ref('');
+const rememberMe = ref(false);
+const loading = ref(false);
+const showPassword = ref(false);
+const loginMode = ref<'local' | 'ldap'>('local');
+const activeField = ref<'username' | 'password' | null>(null);
+const usernamePhase = ref<'glance' | 'focus' | null>(null);
+let usernamePhaseTimerId = 0;
 
-const mouseX = ref(0)
-const mouseY = ref(0)
-const isPurpleBlinking = ref(false)
-const isBlackBlinking = ref(false)
-const isPurplePeeking = ref(false)
+const mouseX = ref(0);
+const mouseY = ref(0);
+const isPurpleBlinking = ref(false);
+const isBlackBlinking = ref(false);
+const isPurplePeeking = ref(false);
 
-const purpleRef = ref<HTMLElement | null>(null)
-const blackRef = ref<HTMLElement | null>(null)
-const orangeRef = ref<HTMLElement | null>(null)
-const yellowRef = ref<HTMLElement | null>(null)
+const purpleRef = ref<HTMLElement | null>(null);
+const blackRef = ref<HTMLElement | null>(null);
+const orangeRef = ref<HTMLElement | null>(null);
+const yellowRef = ref<HTMLElement | null>(null);
 
-const timerIds = new Set<number>()
-let purplePeekToken = 0
+const timerIds = new Set<number>();
+let purplePeekToken = 0;
 
-const isUsernameActive = computed(() => activeField.value === 'username')
-const isPasswordActive = computed(() => activeField.value === 'password')
-const isRevealMode = computed(() => showPassword.value && password.value.trim().length > 0)
-const isConcealMode = computed(() => isPasswordActive.value && !showPassword.value)
+const isUsernameActive = computed(() => activeField.value === 'username');
+const isPasswordActive = computed(() => activeField.value === 'password');
+const isRevealMode = computed(() => showPassword.value && password.value.trim().length > 0);
+const isConcealMode = computed(() => isPasswordActive.value && !showPassword.value);
 
 function trackTimeout(fn: () => void, delay: number) {
   const id = window.setTimeout(() => {
-    timerIds.delete(id)
-    fn()
-  }, delay)
-  timerIds.add(id)
-  return id
+    timerIds.delete(id);
+    fn();
+  }, delay);
+  timerIds.add(id);
+  return id;
 }
 
 function clearAllTimers() {
   for (const id of timerIds) {
-    window.clearTimeout(id)
+    window.clearTimeout(id);
   }
-  timerIds.clear()
+  timerIds.clear();
 }
 
 function startBlinkLoop(target: typeof isPurpleBlinking) {
   const schedule = () => {
-    trackTimeout(() => {
-      target.value = true
-      trackTimeout(() => {
-        target.value = false
-        schedule()
-      }, 160)
-    }, 3000 + Math.random() * 4000)
-  }
-  schedule()
+    trackTimeout(
+      () => {
+        target.value = true;
+        trackTimeout(() => {
+          target.value = false;
+          schedule();
+        }, 160);
+      },
+      3000 + Math.random() * 4000
+    );
+  };
+  schedule();
 }
 
 function clamp(value: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, value))
+  return Math.min(max, Math.max(min, value));
 }
 
 function getCharacterPose(el: HTMLElement | null) {
-  if (!el) return { faceX: 0, faceY: 0, bodySkew: 0 }
+  if (!el) return { faceX: 0, faceY: 0, bodySkew: 0 };
 
-  const rect = el.getBoundingClientRect()
-  const centerX = rect.left + rect.width / 2
-  const centerY = rect.top + rect.height / 3
-  const deltaX = mouseX.value - centerX
-  const deltaY = mouseY.value - centerY
+  const rect = el.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 3;
+  const deltaX = mouseX.value - centerX;
+  const deltaY = mouseY.value - centerY;
 
   return {
     faceX: clamp(deltaX / 20, -15, 15),
     faceY: clamp(deltaY / 30, -10, 10),
     bodySkew: clamp(-deltaX / 120, -6, 6),
-  }
+  };
 }
 
-const purplePose = computed(() => getCharacterPose(purpleRef.value))
-const blackPose = computed(() => getCharacterPose(blackRef.value))
-const orangePose = computed(() => getCharacterPose(orangeRef.value))
-const yellowPose = computed(() => getCharacterPose(yellowRef.value))
+const purplePose = computed(() => getCharacterPose(purpleRef.value));
+const blackPose = computed(() => getCharacterPose(blackRef.value));
+const orangePose = computed(() => getCharacterPose(orangeRef.value));
+const yellowPose = computed(() => getCharacterPose(yellowRef.value));
 
 const purpleEyeLook = computed(() => {
   if (isRevealMode.value) {
-    return isPurplePeeking.value ? { x: 4, y: 5 } : { x: -4, y: -4 }
+    return isPurplePeeking.value ? { x: 4, y: 5 } : { x: -4, y: -4 };
   }
   if (isUsernameActive.value) {
     if (usernamePhase.value === 'glance') {
-      return { x: 5, y: 3 }
+      return { x: 5, y: 3 };
     }
     // focus 阶段跟随鼠标，与 concealMode 一致
-    const pose = purplePose.value
+    const pose = purplePose.value;
     return {
       x: clamp(pose.faceX * 0.3, -4, 4),
       y: clamp(pose.faceY * 0.4, -3.5, 3.5),
-    }
+    };
   }
-  const pose = purplePose.value
+  const pose = purplePose.value;
   return {
     x: clamp(pose.faceX * 0.3, -4, 4),
     y: clamp(pose.faceY * 0.4, -3.5, 3.5),
-  }
-})
+  };
+});
 
 const blackEyeLook = computed(() => {
-  if (isRevealMode.value) return { x: -4, y: -4 }
+  if (isRevealMode.value) return { x: -4, y: -4 };
   if (isUsernameActive.value) {
     if (usernamePhase.value === 'glance') {
-      return { x: -4.5, y: -3 }
+      return { x: -4.5, y: -3 };
     }
     // focus 阶段跟随鼠标，与 concealMode 一致
-    const pose = blackPose.value
+    const pose = blackPose.value;
     return {
       x: clamp(pose.faceX * 0.28, -3.5, 3.5),
       y: clamp(pose.faceY * 0.35, -3, 3),
-    }
+    };
   }
-  const pose = blackPose.value
+  const pose = blackPose.value;
   return {
     x: clamp(pose.faceX * 0.28, -3.5, 3.5),
     y: clamp(pose.faceY * 0.35, -3, 3),
-  }
-})
+  };
+});
 
 const orangeEyeLook = computed(() => {
-  if (isRevealMode.value) return { x: -5, y: -4 }
-  return null
-})
+  if (isRevealMode.value) return { x: -5, y: -4 };
+  return null;
+});
 
 const yellowEyeLook = computed(() => {
-  if (isRevealMode.value) return { x: -5, y: -4 }
-  return null
-})
+  if (isRevealMode.value) return { x: -5, y: -4 };
+  return null;
+});
 
 function setActiveField(field: 'username' | 'password' | null) {
-  activeField.value = field
+  activeField.value = field;
 
   if (usernamePhaseTimerId) {
-    window.clearTimeout(usernamePhaseTimerId)
-    timerIds.delete(usernamePhaseTimerId)
-    usernamePhaseTimerId = 0
+    window.clearTimeout(usernamePhaseTimerId);
+    timerIds.delete(usernamePhaseTimerId);
+    usernamePhaseTimerId = 0;
   }
 
   if (field === 'username') {
-    usernamePhase.value = 'glance'
+    usernamePhase.value = 'glance';
     usernamePhaseTimerId = trackTimeout(() => {
-      usernamePhase.value = 'focus'
-      usernamePhaseTimerId = 0
-    }, 1300)
+      usernamePhase.value = 'focus';
+      usernamePhaseTimerId = 0;
+    }, 1300);
   } else {
-    usernamePhase.value = null
+    usernamePhase.value = null;
   }
 }
 
 function handleMouseMove(event: MouseEvent) {
-  mouseX.value = event.clientX
-  mouseY.value = event.clientY
+  mouseX.value = event.clientX;
+  mouseY.value = event.clientY;
 }
 
 onMounted(() => {
-  const remembered = localStorage.getItem(REMEMBER_FLAG_KEY) === '1'
-  rememberMe.value = remembered
+  const remembered = localStorage.getItem(REMEMBER_FLAG_KEY) === '1';
+  rememberMe.value = remembered;
   if (remembered) {
-    username.value = localStorage.getItem(USERNAME_CACHE_KEY) || ''
+    username.value = localStorage.getItem(USERNAME_CACHE_KEY) || '';
   }
 
-  mouseX.value = window.innerWidth / 2
-  mouseY.value = window.innerHeight / 2
+  mouseX.value = window.innerWidth / 2;
+  mouseY.value = window.innerHeight / 2;
 
-  window.addEventListener('mousemove', handleMouseMove)
-  startBlinkLoop(isPurpleBlinking)
-  startBlinkLoop(isBlackBlinking)
-})
+  window.addEventListener('mousemove', handleMouseMove);
+  startBlinkLoop(isPurpleBlinking);
+  startBlinkLoop(isBlackBlinking);
+});
 
 onBeforeUnmount(() => {
-  window.removeEventListener('mousemove', handleMouseMove)
-  clearAllTimers()
-})
+  window.removeEventListener('mousemove', handleMouseMove);
+  clearAllTimers();
+});
 
-watch(rememberMe, (checked) => {
+watch(rememberMe, checked => {
   if (!checked) {
-    localStorage.removeItem(REMEMBER_FLAG_KEY)
-    localStorage.removeItem(USERNAME_CACHE_KEY)
+    localStorage.removeItem(REMEMBER_FLAG_KEY);
+    localStorage.removeItem(USERNAME_CACHE_KEY);
   }
-})
+});
 
 watch([password, showPassword], ([nextPassword, nextShowPassword]) => {
-  purplePeekToken += 1
-  const token = purplePeekToken
-  isPurplePeeking.value = false
+  purplePeekToken += 1;
+  const token = purplePeekToken;
+  isPurplePeeking.value = false;
 
-  if (!nextPassword.trim() || !nextShowPassword) return
+  if (!nextPassword.trim() || !nextShowPassword) return;
 
   const schedulePeek = () => {
-    trackTimeout(() => {
-      if (purplePeekToken !== token) return
-      isPurplePeeking.value = true
-      trackTimeout(() => {
-        if (purplePeekToken !== token) return
-        isPurplePeeking.value = false
-        schedulePeek()
-      }, 820)
-    }, 2200 + Math.random() * 2800)
-  }
+    trackTimeout(
+      () => {
+        if (purplePeekToken !== token) return;
+        isPurplePeeking.value = true;
+        trackTimeout(() => {
+          if (purplePeekToken !== token) return;
+          isPurplePeeking.value = false;
+          schedulePeek();
+        }, 820);
+      },
+      2200 + Math.random() * 2800
+    );
+  };
 
-  schedulePeek()
-})
+  schedulePeek();
+});
 
 async function onLogin() {
-  const loginUsername = username.value.trim()
+  const loginUsername = username.value.trim();
   if (!loginUsername || !password.value.trim()) {
-    noticeStore.error('请完整填写登录信息')
-    return
+    noticeStore.error('请完整填写登录信息');
+    return;
   }
 
-  await auth.login(loginUsername, password.value, loginMode.value)
-  await auth.loadMe()
+  await auth.login(loginUsername, password.value, loginMode.value);
+  await auth.loadMe();
 
   if (rememberMe.value) {
-    localStorage.setItem(REMEMBER_FLAG_KEY, '1')
-    localStorage.setItem(USERNAME_CACHE_KEY, loginUsername)
+    localStorage.setItem(REMEMBER_FLAG_KEY, '1');
+    localStorage.setItem(USERNAME_CACHE_KEY, loginUsername);
   } else {
-    localStorage.removeItem(REMEMBER_FLAG_KEY)
-    localStorage.removeItem(USERNAME_CACHE_KEY)
+    localStorage.removeItem(REMEMBER_FLAG_KEY);
+    localStorage.removeItem(USERNAME_CACHE_KEY);
   }
 
-  noticeStore.success('登录成功')
-  await new Promise((resolve) => setTimeout(resolve, 220))
-  await router.replace('/dashboard')
+  noticeStore.success('登录成功');
+  await new Promise(resolve => setTimeout(resolve, 220));
+  await router.replace('/dashboard');
 }
 
 async function onPrimaryAction() {
-  loading.value = true
+  loading.value = true;
   try {
-    await onLogin()
+    await onLogin();
   } catch (err: unknown) {
     if (!(err as { response?: unknown })?.response) {
-      const message = (err as { message?: string })?.message ?? '登录失败'
-      noticeStore.error(message)
+      const message = (err as { message?: string })?.message ?? '登录失败';
+      noticeStore.error(message);
     }
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 </script>
@@ -269,136 +275,195 @@ async function onPrimaryAction() {
 
         <div class="scene-stage-wrap">
           <div class="character-stage">
-          <div class="stage-glow stage-glow-one"></div>
-          <div class="stage-glow stage-glow-two"></div>
+            <div class="stage-glow stage-glow-one"></div>
+            <div class="stage-glow stage-glow-two"></div>
 
-          <div
-            ref="purpleRef"
-            class="character character-purple"
-            :style="{
-              height: isConcealMode || (isUsernameActive && usernamePhase === 'focus') ? '440px'
-                : isUsernameActive && usernamePhase === 'glance' ? '430px'
-                : '400px',
-              transform: isRevealMode
-                ? 'skewX(0deg)'
-                : isConcealMode || (isUsernameActive && usernamePhase === 'focus')
-                  ? `skewX(${purplePose.bodySkew - 12}deg) translateX(40px)`
+            <div
+              ref="purpleRef"
+              class="character character-purple"
+              :style="{
+                height:
+                  isConcealMode || (isUsernameActive && usernamePhase === 'focus')
+                    ? '440px'
+                    : isUsernameActive && usernamePhase === 'glance'
+                      ? '430px'
+                      : '400px',
+                transform: isRevealMode
+                  ? 'skewX(0deg)'
+                  : isConcealMode || (isUsernameActive && usernamePhase === 'focus')
+                    ? `skewX(${purplePose.bodySkew - 12}deg) translateX(40px)`
+                    : isUsernameActive && usernamePhase === 'glance'
+                      ? `skewX(${purplePose.bodySkew - 3}deg) translateX(15px)`
+                      : `skewX(${purplePose.bodySkew}deg)`,
+              }"
+            >
+              <div
+                class="character-eyes"
+                :style="{
+                  left: isRevealMode
+                    ? '20px'
+                    : isUsernameActive && usernamePhase === 'glance'
+                      ? '60px'
+                      : `${45 + purplePose.faceX}px`,
+                  top: isRevealMode
+                    ? '35px'
+                    : isUsernameActive && usernamePhase === 'glance'
+                      ? '42px'
+                      : `${40 + purplePose.faceY}px`,
+                }"
+              >
+                <div class="eye eye-shell" :class="{ blink: isPurpleBlinking }">
+                  <div
+                    v-if="!isPurpleBlinking"
+                    class="eye-pupil eye-pupil-shell"
+                    :style="
+                      purpleEyeLook
+                        ? { transform: `translate(${purpleEyeLook.x}px, ${purpleEyeLook.y}px)` }
+                        : undefined
+                    "
+                  ></div>
+                </div>
+                <div class="eye eye-shell" :class="{ blink: isPurpleBlinking }">
+                  <div
+                    v-if="!isPurpleBlinking"
+                    class="eye-pupil eye-pupil-shell"
+                    :style="
+                      purpleEyeLook
+                        ? { transform: `translate(${purpleEyeLook.x}px, ${purpleEyeLook.y}px)` }
+                        : undefined
+                    "
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              ref="blackRef"
+              class="character character-black"
+              :style="{
+                transform: isRevealMode
+                  ? 'skewX(0deg)'
                   : isUsernameActive && usernamePhase === 'glance'
-                    ? `skewX(${purplePose.bodySkew - 3}deg) translateX(15px)`
-                    : `skewX(${purplePose.bodySkew}deg)`,
-            }"
-          >
-            <div
-              class="character-eyes"
-              :style="{
-                left: isRevealMode ? '20px'
-                  : isUsernameActive && usernamePhase === 'glance' ? '60px'
-                  : `${45 + purplePose.faceX}px`,
-                top: isRevealMode ? '35px'
-                  : isUsernameActive && usernamePhase === 'glance' ? '42px'
-                  : `${40 + purplePose.faceY}px`,
-              }"
-            >
-              <div class="eye eye-shell" :class="{ blink: isPurpleBlinking }">
-                <div
-                  v-if="!isPurpleBlinking"
-                  class="eye-pupil eye-pupil-shell"
-                  :style="purpleEyeLook ? { transform: `translate(${purpleEyeLook.x}px, ${purpleEyeLook.y}px)` } : undefined"
-                ></div>
-              </div>
-              <div class="eye eye-shell" :class="{ blink: isPurpleBlinking }">
-                <div
-                  v-if="!isPurpleBlinking"
-                  class="eye-pupil eye-pupil-shell"
-                  :style="purpleEyeLook ? { transform: `translate(${purpleEyeLook.x}px, ${purpleEyeLook.y}px)` } : undefined"
-                ></div>
-              </div>
-            </div>
-          </div>
-
-          <div
-            ref="blackRef"
-            class="character character-black"
-            :style="{
-              transform: isRevealMode
-                ? 'skewX(0deg)'
-                : isUsernameActive && usernamePhase === 'glance'
-                  ? `skewX(${blackPose.bodySkew - 4}deg)`
-                  : isUsernameActive && usernamePhase === 'focus'
-                    ? `skewX(${blackPose.bodySkew * 1.5}deg)`
-                    : isConcealMode
+                    ? `skewX(${blackPose.bodySkew - 4}deg)`
+                    : isUsernameActive && usernamePhase === 'focus'
                       ? `skewX(${blackPose.bodySkew * 1.5}deg)`
-                      : `skewX(${blackPose.bodySkew}deg)`,
-            }"
-          >
-            <div
-              class="character-eyes character-eyes-compact"
-              :style="{
-                left: isRevealMode ? '10px'
-                  : isUsernameActive && usernamePhase === 'glance' ? '18px'
-                  : `${26 + blackPose.faceX}px`,
-                top: isRevealMode ? '28px'
-                  : isUsernameActive && usernamePhase === 'glance' ? '32px'
-                  : `${32 + blackPose.faceY}px`,
+                      : isConcealMode
+                        ? `skewX(${blackPose.bodySkew * 1.5}deg)`
+                        : `skewX(${blackPose.bodySkew}deg)`,
               }"
             >
-              <div class="eye eye-shell eye-small" :class="{ blink: isBlackBlinking }">
+              <div
+                class="character-eyes character-eyes-compact"
+                :style="{
+                  left: isRevealMode
+                    ? '10px'
+                    : isUsernameActive && usernamePhase === 'glance'
+                      ? '18px'
+                      : `${26 + blackPose.faceX}px`,
+                  top: isRevealMode
+                    ? '28px'
+                    : isUsernameActive && usernamePhase === 'glance'
+                      ? '32px'
+                      : `${32 + blackPose.faceY}px`,
+                }"
+              >
+                <div class="eye eye-shell eye-small" :class="{ blink: isBlackBlinking }">
+                  <div
+                    v-if="!isBlackBlinking"
+                    class="eye-pupil eye-pupil-shell eye-pupil-small"
+                    :style="
+                      blackEyeLook
+                        ? { transform: `translate(${blackEyeLook.x}px, ${blackEyeLook.y}px)` }
+                        : undefined
+                    "
+                  ></div>
+                </div>
+                <div class="eye eye-shell eye-small" :class="{ blink: isBlackBlinking }">
+                  <div
+                    v-if="!isBlackBlinking"
+                    class="eye-pupil eye-pupil-shell eye-pupil-small"
+                    :style="
+                      blackEyeLook
+                        ? { transform: `translate(${blackEyeLook.x}px, ${blackEyeLook.y}px)` }
+                        : undefined
+                    "
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              ref="orangeRef"
+              class="character character-orange"
+              :style="{
+                transform: isRevealMode ? 'skewX(0deg)' : `skewX(${orangePose.bodySkew}deg)`,
+              }"
+            >
+              <div
+                class="character-eyes character-eyes-pupils character-eyes-pupils-wide"
+                :style="{
+                  left: isRevealMode ? '50px' : `${82 + orangePose.faceX}px`,
+                  top: isRevealMode ? '85px' : `${90 + orangePose.faceY}px`,
+                }"
+              >
                 <div
-                  v-if="!isBlackBlinking"
-                  class="eye-pupil eye-pupil-shell eye-pupil-small"
-                  :style="blackEyeLook ? { transform: `translate(${blackEyeLook.x}px, ${blackEyeLook.y}px)` } : undefined"
+                  class="eye-pupil eye-pupil-plain"
+                  :style="
+                    orangeEyeLook
+                      ? { transform: `translate(${orangeEyeLook.x}px, ${orangeEyeLook.y}px)` }
+                      : undefined
+                  "
+                ></div>
+                <div
+                  class="eye-pupil eye-pupil-plain"
+                  :style="
+                    orangeEyeLook
+                      ? { transform: `translate(${orangeEyeLook.x}px, ${orangeEyeLook.y}px)` }
+                      : undefined
+                  "
                 ></div>
               </div>
-              <div class="eye eye-shell eye-small" :class="{ blink: isBlackBlinking }">
+            </div>
+
+            <div
+              ref="yellowRef"
+              class="character character-yellow"
+              :style="{
+                transform: isRevealMode ? 'skewX(0deg)' : `skewX(${yellowPose.bodySkew}deg)`,
+              }"
+            >
+              <div
+                class="character-eyes character-eyes-pupils"
+                :style="{
+                  left: isRevealMode ? '20px' : `${52 + yellowPose.faceX}px`,
+                  top: isRevealMode ? '35px' : `${40 + yellowPose.faceY}px`,
+                }"
+              >
                 <div
-                  v-if="!isBlackBlinking"
-                  class="eye-pupil eye-pupil-shell eye-pupil-small"
-                  :style="blackEyeLook ? { transform: `translate(${blackEyeLook.x}px, ${blackEyeLook.y}px)` } : undefined"
+                  class="eye-pupil eye-pupil-plain"
+                  :style="
+                    yellowEyeLook
+                      ? { transform: `translate(${yellowEyeLook.x}px, ${yellowEyeLook.y}px)` }
+                      : undefined
+                  "
+                ></div>
+                <div
+                  class="eye-pupil eye-pupil-plain"
+                  :style="
+                    yellowEyeLook
+                      ? { transform: `translate(${yellowEyeLook.x}px, ${yellowEyeLook.y}px)` }
+                      : undefined
+                  "
                 ></div>
               </div>
+              <div
+                class="character-mouth"
+                :style="{
+                  left: isRevealMode ? '10px' : `${40 + yellowPose.faceX}px`,
+                  top: isRevealMode ? '88px' : `${88 + yellowPose.faceY}px`,
+                }"
+              ></div>
             </div>
-          </div>
-
-          <div
-            ref="orangeRef"
-            class="character character-orange"
-            :style="{ transform: isRevealMode ? 'skewX(0deg)' : `skewX(${orangePose.bodySkew}deg)` }"
-          >
-            <div
-              class="character-eyes character-eyes-pupils character-eyes-pupils-wide"
-              :style="{
-                left: isRevealMode ? '50px' : `${82 + orangePose.faceX}px`,
-                top: isRevealMode ? '85px' : `${90 + orangePose.faceY}px`,
-              }"
-            >
-              <div class="eye-pupil eye-pupil-plain" :style="orangeEyeLook ? { transform: `translate(${orangeEyeLook.x}px, ${orangeEyeLook.y}px)` } : undefined"></div>
-              <div class="eye-pupil eye-pupil-plain" :style="orangeEyeLook ? { transform: `translate(${orangeEyeLook.x}px, ${orangeEyeLook.y}px)` } : undefined"></div>
-            </div>
-          </div>
-
-          <div
-            ref="yellowRef"
-            class="character character-yellow"
-            :style="{ transform: isRevealMode ? 'skewX(0deg)' : `skewX(${yellowPose.bodySkew}deg)` }"
-          >
-            <div
-              class="character-eyes character-eyes-pupils"
-              :style="{
-                left: isRevealMode ? '20px' : `${52 + yellowPose.faceX}px`,
-                top: isRevealMode ? '35px' : `${40 + yellowPose.faceY}px`,
-              }"
-            >
-              <div class="eye-pupil eye-pupil-plain" :style="yellowEyeLook ? { transform: `translate(${yellowEyeLook.x}px, ${yellowEyeLook.y}px)` } : undefined"></div>
-              <div class="eye-pupil eye-pupil-plain" :style="yellowEyeLook ? { transform: `translate(${yellowEyeLook.x}px, ${yellowEyeLook.y}px)` } : undefined"></div>
-            </div>
-            <div
-              class="character-mouth"
-              :style="{
-                left: isRevealMode ? '10px' : `${40 + yellowPose.faceX}px`,
-                top: isRevealMode ? '88px' : `${88 + yellowPose.faceY}px`,
-              }"
-            ></div>
-          </div>
           </div>
         </div>
       </section>
@@ -462,14 +527,54 @@ async function onPrimaryAction() {
                       @click="showPassword = !showPassword"
                     >
                       <svg v-if="!showPassword" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M1.5 12s3.9-6.5 10.5-6.5S22.5 12 22.5 12 18.6 18.5 12 18.5 1.5 12 1.5 12Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                        <circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                        <path
+                          d="M1.5 12s3.9-6.5 10.5-6.5S22.5 12 22.5 12 18.6 18.5 12 18.5 1.5 12 1.5 12Z"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <circle
+                          cx="12"
+                          cy="12"
+                          r="3.2"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                        />
                       </svg>
                       <svg v-else viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M3 3l18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                        <path d="M10.7 5.8A11.2 11.2 0 0 1 12 5.5c6.6 0 10.5 6.5 10.5 6.5a18 18 0 0 1-3.6 4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M6.1 6.2C3.3 8 1.5 12 1.5 12s3.9 6.5 10.5 6.5c1.7 0 3.1-.4 4.4-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M9.9 9.9A3.2 3.2 0 0 0 14.1 14.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                        <path
+                          d="M3 3l18 18"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                        />
+                        <path
+                          d="M10.7 5.8A11.2 11.2 0 0 1 12 5.5c6.6 0 10.5 6.5 10.5 6.5a18 18 0 0 1-3.6 4.3"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M6.1 6.2C3.3 8 1.5 12 1.5 12s3.9 6.5 10.5 6.5c1.7 0 3.1-.4 4.4-1"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M9.9 9.9A3.2 3.2 0 0 0 14.1 14.1"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                        />
                       </svg>
                     </button>
                   </div>
@@ -600,7 +705,9 @@ async function onPrimaryAction() {
 .character {
   position: absolute;
   bottom: 0;
-  transition: transform 0.7s ease, height 0.7s ease;
+  transition:
+    transform 0.7s ease,
+    height 0.7s ease;
   transform-origin: bottom center;
 }
 
@@ -644,7 +751,9 @@ async function onPrimaryAction() {
   position: absolute;
   display: flex;
   gap: 32px;
-  transition: left 0.2s ease, top 0.2s ease;
+  transition:
+    left 0.2s ease,
+    top 0.2s ease;
 }
 
 .character-eyes-compact {
@@ -710,7 +819,9 @@ async function onPrimaryAction() {
   height: 4px;
   border-radius: 999px;
   background: #2d2d2d;
-  transition: left 0.2s ease, top 0.2s ease;
+  transition:
+    left 0.2s ease,
+    top 0.2s ease;
 }
 
 .login-panel {
@@ -821,7 +932,9 @@ async function onPrimaryAction() {
   background: #ffffff;
   font-size: 16px;
   padding: 0 14px;
-  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
 }
 
 .field-input-wrap input {

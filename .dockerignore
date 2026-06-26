@@ -97,7 +97,7 @@ requirements.txt
 # repomix
 repomix.config.json
 .repomixignore
-repomix-kvm-manager.md
+repomix-zonelease.md
 
 # plan file
 task_plan.md

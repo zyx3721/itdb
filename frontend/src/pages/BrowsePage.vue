@@ -1,146 +1,149 @@
 ﻿<script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import api from '../api/client'
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import api from '../api/client';
 
 type BrowseNode = {
-  id: string
-  label: string
-  leaf: boolean
-  resource?: string
-  entityId?: number
-}
+  id: string;
+  label: string;
+  leaf: boolean;
+  resource?: string;
+  entityId?: number;
+};
 
 type TreeRow = {
-  node: BrowseNode
-  prefix: string
-  expanded: boolean
-  loading: boolean
-}
+  node: BrowseNode;
+  prefix: string;
+  expanded: boolean;
+  loading: boolean;
+};
 
-const router = useRouter()
+const router = useRouter();
 
-const ROOT_ID = '0'
+const ROOT_ID = '0';
 
-const nodesById = ref<Record<string, BrowseNode>>({})
-const childrenByParent = ref<Record<string, string[]>>({})
-const expandedById = ref<Record<string, boolean>>({})
-const loadingByParent = ref<Record<string, boolean>>({})
-const selectedId = ref('')
-const error = ref('')
+const nodesById = ref<Record<string, BrowseNode>>({});
+const childrenByParent = ref<Record<string, string[]>>({});
+const expandedById = ref<Record<string, boolean>>({});
+const loadingByParent = ref<Record<string, boolean>>({});
+const selectedId = ref('');
+const error = ref('');
 
 function setChildren(parentId: string, nodes: BrowseNode[]) {
   for (const node of nodes) {
-    nodesById.value[node.id] = node
+    nodesById.value[node.id] = node;
   }
-  childrenByParent.value[parentId] = nodes.map((node) => node.id)
+  childrenByParent.value[parentId] = nodes.map(node => node.id);
 }
 
 function isExpanded(id: string) {
-  return !!expandedById.value[id]
+  return !!expandedById.value[id];
 }
 
 function isLoading(parentId: string) {
-  return !!loadingByParent.value[parentId]
+  return !!loadingByParent.value[parentId];
 }
 
 function hasLoadedChildren(parentId: string) {
-  return Object.prototype.hasOwnProperty.call(childrenByParent.value, parentId)
+  return Object.prototype.hasOwnProperty.call(childrenByParent.value, parentId);
 }
 
 function getDirectChildCount(nodeId: string) {
-  return (childrenByParent.value[nodeId] ?? []).length
+  return (childrenByParent.value[nodeId] ?? []).length;
 }
 
 function shouldShowBottomCount(node: BrowseNode) {
-  if (node.leaf) return false
-  if (!isExpanded(node.id)) return false
-  if (!hasLoadedChildren(node.id)) return false
-  const childIds = childrenByParent.value[node.id] ?? []
-  if (childIds.length === 0) return true
-  return childIds.every((childId) => nodesById.value[childId]?.leaf)
+  if (node.leaf) return false;
+  if (!isExpanded(node.id)) return false;
+  if (!hasLoadedChildren(node.id)) return false;
+  const childIds = childrenByParent.value[node.id] ?? [];
+  if (childIds.length === 0) return true;
+  return childIds.every(childId => nodesById.value[childId]?.leaf);
 }
 
 async function loadChildren(parentId: string) {
-  if (isLoading(parentId)) return
-  loadingByParent.value[parentId] = true
-  error.value = ''
+  if (isLoading(parentId)) return;
+  loadingByParent.value[parentId] = true;
+  error.value = '';
   try {
-    const { data } = await api.get<BrowseNode[]>('/browse/tree', { params: { id: parentId } })
-    setChildren(parentId, data)
+    const { data } = await api.get<BrowseNode[]>('/browse/tree', { params: { id: parentId } });
+    setChildren(parentId, data);
   } catch (err: unknown) {
-    error.value = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? '浏览树加载失败'
+    error.value =
+      (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+      '浏览树加载失败';
   } finally {
-    loadingByParent.value[parentId] = false
+    loadingByParent.value[parentId] = false;
   }
 }
 
 async function toggleNode(node: BrowseNode) {
-  if (node.leaf) return
-  const nextExpanded = !isExpanded(node.id)
-  expandedById.value[node.id] = nextExpanded
+  if (node.leaf) return;
+  const nextExpanded = !isExpanded(node.id);
+  expandedById.value[node.id] = nextExpanded;
   if (nextExpanded && !hasLoadedChildren(node.id)) {
-    await loadChildren(node.id)
+    await loadChildren(node.id);
   }
 }
 
 async function choose(node: BrowseNode) {
-  selectedId.value = node.id
+  selectedId.value = node.id;
   if (node.leaf) {
     if (node.resource) {
-      const query = node.entityId && node.entityId > 0 ? { edit: String(node.entityId) } : undefined
-      await router.push({ path: `/resources/${node.resource}`, query })
+      const query =
+        node.entityId && node.entityId > 0 ? { edit: String(node.entityId) } : undefined;
+      await router.push({ path: `/resources/${node.resource}`, query });
     }
-    return
+    return;
   }
-  await toggleNode(node)
+  await toggleNode(node);
 }
 
 const treeRows = computed<TreeRow[]>(() => {
-  const rows: TreeRow[] = []
+  const rows: TreeRow[] = [];
 
   function walk(parentId: string, ancestorLastFlags: boolean[]) {
-    const childIds = childrenByParent.value[parentId] ?? []
+    const childIds = childrenByParent.value[parentId] ?? [];
     childIds.forEach((id, index) => {
-      const node = nodesById.value[id]
-      if (!node) return
+      const node = nodesById.value[id];
+      if (!node) return;
 
-      const isLast = index === childIds.length - 1
-      let prefix = ''
+      const isLast = index === childIds.length - 1;
+      let prefix = '';
       for (const flag of ancestorLastFlags) {
-        prefix += flag ? '   ' : '│  '
+        prefix += flag ? '   ' : '│  ';
       }
-      prefix += isLast ? '└─ ' : '├─ '
+      prefix += isLast ? '└─ ' : '├─ ';
 
       rows.push({
         node,
         prefix,
         expanded: isExpanded(id),
         loading: isLoading(id),
-      })
+      });
 
       if (!node.leaf && isExpanded(id)) {
-        walk(id, [...ancestorLastFlags, isLast])
+        walk(id, [...ancestorLastFlags, isLast]);
       }
-    })
+    });
   }
 
-  walk(ROOT_ID, [])
-  return rows
-})
+  walk(ROOT_ID, []);
+  return rows;
+});
 
 async function resetTree() {
-  nodesById.value = {}
-  childrenByParent.value = {}
-  expandedById.value = {}
-  loadingByParent.value = {}
-  selectedId.value = ''
-  await loadChildren(ROOT_ID)
+  nodesById.value = {};
+  childrenByParent.value = {};
+  expandedById.value = {};
+  loadingByParent.value = {};
+  selectedId.value = '';
+  await loadChildren(ROOT_ID);
 }
 
 onMounted(() => {
-  void resetTree()
-})
+  void resetTree();
+});
 </script>
 
 <template>
@@ -154,7 +157,11 @@ onMounted(() => {
     <div class="tree-wrap">
       <ul class="tree-list">
         <li v-for="row in treeRows" :key="row.node.id" class="tree-row">
-          <button class="tree-node" :class="{ active: selectedId === row.node.id, leaf: row.node.leaf }" @click="choose(row.node)">
+          <button
+            class="tree-node"
+            :class="{ active: selectedId === row.node.id, leaf: row.node.leaf }"
+            @click="choose(row.node)"
+          >
             <span class="tree-prefix mono">{{ row.prefix }}</span>
             <span class="tree-toggle">{{ row.node.leaf ? '↗' : row.expanded ? '▾' : '▸' }}</span>
             <span class="tree-label">{{ row.node.label }}</span>
@@ -208,7 +215,10 @@ onMounted(() => {
   padding: 3px 6px;
   color: var(--text);
   border-radius: 8px;
-  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .tree-node:hover {
@@ -294,7 +304,9 @@ onMounted(() => {
   background-size: 100% 1px;
   background-position: 0 100%;
   font-weight: 500;
-  transition: color 0.18s ease, background-size 0.18s ease;
+  transition:
+    color 0.18s ease,
+    background-size 0.18s ease;
 }
 
 .tree-node.leaf:hover {

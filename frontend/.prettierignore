@@ -1,0 +1,25 @@
+# 依赖
+node_modules
+
+# 构建产物
+dist
+build
+.next
+.nuxt
+out
+
+# 日志
+*.log
+logs
+
+# 临时文件
+tmp
+temp
+*.tmp
+
+# 其他
+.git
+.DS_Store
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

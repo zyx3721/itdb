@@ -1,260 +1,298 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import api from '../api/client'
-import { useBootstrapStore } from '../stores/bootstrap'
+import { computed, onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import api from '../api/client';
+import { useBootstrapStore } from '../stores/bootstrap';
 
-type RackViewDepth = 'F' | 'M' | 'B'
+type RackViewDepth = 'F' | 'M' | 'B';
 
 type RackItemRow = {
-  id: number
-  manufacturer: string
-  model: string
-  label: string
-  statusText: string
-  statusColor: string
-  ipv4: string
-  uSize: number
-  rackID: number
-  rackPosition: number
-  rackPosDepth: number
-}
+  id: number;
+  manufacturer: string;
+  model: string;
+  label: string;
+  statusText: string;
+  statusColor: string;
+  ipv4: string;
+  uSize: number;
+  rackID: number;
+  rackPosition: number;
+  rackPosDepth: number;
+};
 
 type RackViewCell = {
-  key: string
-  kind: 'empty' | 'item'
-  colspan: number
-  rowspan: number
-  itemID?: number
-  title?: string
-  subtitle?: string
-  tip?: string
-  statusClass?: string
-  style?: Record<string, string>
-  highlight?: boolean
-}
+  key: string;
+  kind: 'empty' | 'item';
+  colspan: number;
+  rowspan: number;
+  itemID?: number;
+  title?: string;
+  subtitle?: string;
+  tip?: string;
+  statusClass?: string;
+  style?: Record<string, string>;
+  highlight?: boolean;
+};
 
 type RackViewRow = {
-  unit: number
-  cells: RackViewCell[]
-}
+  unit: number;
+  cells: RackViewCell[];
+};
 
 type RackViewBuildResult = {
-  rows: RackViewRow[]
-  warnings: string[]
-  moreItems: RackItemRow[]
-}
+  rows: RackViewRow[];
+  warnings: string[];
+  moreItems: RackItemRow[];
+};
 
-const route = useRoute()
-const router = useRouter()
-const bootstrap = useBootstrapStore()
+const route = useRoute();
+const router = useRouter();
+const bootstrap = useBootstrapStore();
 
-const loading = ref(false)
-const loadError = ref('')
-const rack = ref<Record<string, unknown> | null>(null)
-const rackItems = ref<RackItemRow[]>([])
+const loading = ref(false);
+const loadError = ref('');
+const rack = ref<Record<string, unknown> | null>(null);
+const rackItems = ref<RackItemRow[]>([]);
 
 const rackID = computed(() => {
-  const value = Number.parseInt(String(route.params.id ?? '').trim(), 10)
-  return Number.isFinite(value) && value > 0 ? value : 0
-})
+  const value = Number.parseInt(String(route.params.id ?? '').trim(), 10);
+  return Number.isFinite(value) && value > 0 ? value : 0;
+});
 
 const highlightItemID = computed(() => {
-  const raw = Array.isArray(route.query.highlight) ? route.query.highlight[0] : route.query.highlight
-  const value = Number.parseInt(String(raw ?? '').trim(), 10)
-  return Number.isFinite(value) && value > 0 ? value : 0
-})
+  const raw = Array.isArray(route.query.highlight)
+    ? route.query.highlight[0]
+    : route.query.highlight;
+  const value = Number.parseInt(String(raw ?? '').trim(), 10);
+  return Number.isFinite(value) && value > 0 ? value : 0;
+});
 
 const rackTitle = computed(() => {
-  const row = rack.value
-  if (!row) return ''
-  const label = String(row.label ?? '').trim() || `机架${rackID.value}`
-  const units = Number.parseInt(String(row.usize ?? '').trim(), 10)
-  return units > 0 ? `${label},${units}U 晟图` : `${label} 晟图`
-})
+  const row = rack.value;
+  if (!row) return '';
+  const label = String(row.label ?? '').trim() || `机架${rackID.value}`;
+  const units = Number.parseInt(String(row.usize ?? '').trim(), 10);
+  return units > 0 ? `${label},${units}U 晟图` : `${label} 晟图`;
+});
 
 const rackMetaText = computed(() => {
-  const row = rack.value
-  if (!row) return ''
-  const model = String(row.model ?? '').trim()
-  const locationRows = (bootstrap.lookups.locations ?? []) as Record<string, unknown>[]
-  const areaRows = (bootstrap.lookups.locareas ?? []) as Record<string, unknown>[]
-  const location = locationRows.find((entry) => Number(entry.id ?? 0) === Number(row.locationid ?? 0))
-  const area = areaRows.find((entry) => Number(entry.id ?? 0) === Number(row.locareaid ?? 0))
+  const row = rack.value;
+  if (!row) return '';
+  const model = String(row.model ?? '').trim();
+  const locationRows = (bootstrap.lookups.locations ?? []) as Record<string, unknown>[];
+  const areaRows = (bootstrap.lookups.locareas ?? []) as Record<string, unknown>[];
+  const location = locationRows.find(
+    entry => Number(entry.id ?? 0) === Number(row.locationid ?? 0)
+  );
+  const area = areaRows.find(entry => Number(entry.id ?? 0) === Number(row.locareaid ?? 0));
   const parts = [
     `编号: ${rackID.value}`,
     model ? `型号: ${model}` : '',
     location ? `地点: ${String(location.name ?? '').trim()}` : '',
     area ? `区域: ${String(area.areaname ?? '').trim()}` : '',
-  ].filter(Boolean)
-  return parts.join(' / ')
-})
+  ].filter(Boolean);
+  return parts.join(' / ');
+});
 
 function naturalCompare(a: unknown, b: unknown) {
-  return String(a ?? '').localeCompare(String(b ?? ''), 'zh-CN', { numeric: true, sensitivity: 'base' })
+  return String(a ?? '').localeCompare(String(b ?? ''), 'zh-CN', {
+    numeric: true,
+    sensitivity: 'base',
+  });
 }
 
 function getRackDepthMask(raw: unknown) {
-  const value = Number(raw ?? 0)
-  return Number.isFinite(value) && value > 0 ? value : 0
+  const value = Number(raw ?? 0);
+  return Number.isFinite(value) && value > 0 ? value : 0;
 }
 
 function firstRackIPv4(ipv4: string) {
-  return ipv4
-    .split(',')
-    .map((part) => part.trim())
-    .find(Boolean) ?? ''
+  return (
+    ipv4
+      .split(',')
+      .map(part => part.trim())
+      .find(Boolean) ?? ''
+  );
 }
 
 function getRackItemStatusClass(statusText: string) {
-  const status = statusText.trim().toLowerCase()
-  if (!status) return ''
-  if (status.includes('库存') || status.includes('stored')) return 'rack-view-status-stored'
-  if (status.includes('故障') || status.includes('defective')) return 'rack-view-status-defective'
-  if (status.includes('报废') || status.includes('obsolete')) return 'rack-view-status-obsolete'
-  return 'rack-view-status-active'
+  const status = statusText.trim().toLowerCase();
+  if (!status) return '';
+  if (status.includes('库存') || status.includes('stored')) return 'rack-view-status-stored';
+  if (status.includes('故障') || status.includes('defective')) return 'rack-view-status-defective';
+  if (status.includes('报废') || status.includes('obsolete')) return 'rack-view-status-obsolete';
+  return 'rack-view-status-active';
 }
 
 function getStatusColorByText(statusText: string) {
-  const rows = (bootstrap.lookups.statustypes ?? []) as Record<string, unknown>[]
-  const match = rows.find((row) => String(row.statusdesc ?? '').trim() === statusText.trim())
-  const color = String(match?.color ?? '').trim()
-  return /^#([\da-f]{3}|[\da-f]{6})$/i.test(color) ? color : ''
+  const rows = (bootstrap.lookups.statustypes ?? []) as Record<string, unknown>[];
+  const match = rows.find(row => String(row.statusdesc ?? '').trim() === statusText.trim());
+  const color = String(match?.color ?? '').trim();
+  return /^#([\da-f]{3}|[\da-f]{6})$/i.test(color) ? color : '';
 }
 
 function getReadableTextColor(backgroundColor: string) {
-  const raw = backgroundColor.trim().replace('#', '')
-  if (!/^[\da-f]{3}$|^[\da-f]{6}$/i.test(raw)) return '#143d5c'
-  const hex = raw.length === 3 ? raw.split('').map((part) => `${part}${part}`).join('') : raw
-  const red = Number.parseInt(hex.slice(0, 2), 16)
-  const green = Number.parseInt(hex.slice(2, 4), 16)
-  const blue = Number.parseInt(hex.slice(4, 6), 16)
-  const luminance = (red * 299 + green * 587 + blue * 114) / 1000
-  return luminance >= 160 ? '#173651' : '#ffffff'
+  const raw = backgroundColor.trim().replace('#', '');
+  if (!/^[\da-f]{3}$|^[\da-f]{6}$/i.test(raw)) return '#143d5c';
+  const hex =
+    raw.length === 3
+      ? raw
+          .split('')
+          .map(part => `${part}${part}`)
+          .join('')
+      : raw;
+  const red = Number.parseInt(hex.slice(0, 2), 16);
+  const green = Number.parseInt(hex.slice(2, 4), 16);
+  const blue = Number.parseInt(hex.slice(4, 6), 16);
+  const luminance = (red * 299 + green * 587 + blue * 114) / 1000;
+  return luminance >= 160 ? '#173651' : '#ffffff';
 }
 
 function getRackItemStatusStyle(statusText: string, statusColor = ''): Record<string, string> {
-  const color = String(statusColor || getStatusColorByText(statusText)).trim()
-  if (!color) return {}
+  const color = String(statusColor || getStatusColorByText(statusText)).trim();
+  if (!color) return {};
   return {
     '--rack-cell-bg': color,
     '--rack-cell-fg': getReadableTextColor(color),
-  }
+  };
 }
 
 function getRackItemTitle(row: RackItemRow) {
-  return [`${row.manufacturer || '-'}`, `${row.model || '-'}`, row.id > 0 ? `[ID:${row.id}]` : '[新建]'].join(' ').trim()
+  return [
+    `${row.manufacturer || '-'}`,
+    `${row.model || '-'}`,
+    row.id > 0 ? `[ID:${row.id}]` : '[新建]',
+  ]
+    .join(' ')
+    .trim();
 }
 
 function getRackItemSubtitle(row: RackItemRow) {
-  const parts: string[] = []
-  if (row.label.trim()) parts.push(row.label.trim())
-  const firstIP = firstRackIPv4(row.ipv4)
-  if (firstIP) parts.push(`[ip:${firstIP}]`)
-  return parts.join(' ')
+  const parts: string[] = [];
+  if (row.label.trim()) parts.push(row.label.trim());
+  const firstIP = firstRackIPv4(row.ipv4);
+  if (firstIP) parts.push(`[ip:${firstIP}]`);
+  return parts.join(' ');
 }
 
 function getRackItemTip(row: RackItemRow) {
-  const statusText = row.statusText.trim() ? `状态：${row.statusText.trim()}` : '状态：使用中'
-  const sizeText = row.uSize > 0 ? `${row.uSize}U` : '-'
-  const posText = row.rackPosition > 0 ? `${row.rackPosition}` : '-'
-  return `编号：${row.id} / ${statusText} / 位置：${posText}U / 高度：${sizeText}`
+  const statusText = row.statusText.trim() ? `状态：${row.statusText.trim()}` : '状态：使用中';
+  const sizeText = row.uSize > 0 ? `${row.uSize}U` : '-';
+  const posText = row.rackPosition > 0 ? `${row.rackPosition}` : '-';
+  return `编号：${row.id} / ${statusText} / 位置：${posText}U / 高度：${sizeText}`;
 }
 
-function buildRackViewData(totalUnits: number, reverse: boolean, itemRows: RackItemRow[], highlightID: number): RackViewBuildResult {
-  if (totalUnits <= 0) return { rows: [], warnings: [], moreItems: [] }
+function buildRackViewData(
+  totalUnits: number,
+  reverse: boolean,
+  itemRows: RackItemRow[],
+  highlightID: number
+): RackViewBuildResult {
+  if (totalUnits <= 0) return { rows: [], warnings: [], moreItems: [] };
 
-  const rackRows: Record<number, Partial<Record<RackViewDepth | `${RackViewDepth}T`, number>>> = {}
-  const itemMap = new Map<number, RackItemRow>()
-  const warnings: string[] = []
-  const moreItems: RackItemRow[] = []
-  const sourceRows = [...itemRows].sort((a, b) => naturalCompare(a.id, b.id))
+  const rackRows: Record<number, Partial<Record<RackViewDepth | `${RackViewDepth}T`, number>>> = {};
+  const itemMap = new Map<number, RackItemRow>();
+  const warnings: string[] = [];
+  const moreItems: RackItemRow[] = [];
+  const sourceRows = [...itemRows].sort((a, b) => naturalCompare(a.id, b.id));
 
   for (const item of sourceRows) {
-    itemMap.set(item.id, item)
-    const rackPosition = Number(item.rackPosition ?? 0)
-    const units = Number(item.uSize ?? 0)
-    const depthMask = getRackDepthMask(item.rackPosDepth)
-    if (!Number.isFinite(rackPosition) || rackPosition <= 0 || !Number.isFinite(units) || units <= 0 || depthMask <= 0) {
-      moreItems.push(item)
-      continue
+    itemMap.set(item.id, item);
+    const rackPosition = Number(item.rackPosition ?? 0);
+    const units = Number(item.uSize ?? 0);
+    const depthMask = getRackDepthMask(item.rackPosDepth);
+    if (
+      !Number.isFinite(rackPosition) ||
+      rackPosition <= 0 ||
+      !Number.isFinite(units) ||
+      units <= 0 ||
+      depthMask <= 0
+    ) {
+      moreItems.push(item);
+      continue;
     }
 
     if (reverse) {
       if (rackPosition + units - 1 > totalUnits) {
-        warnings.push(`硬件 ${item.id}（${item.model || '-'}）超出机架边界`)
-        continue
+        warnings.push(`硬件 ${item.id}（${item.model || '-'}）超出机架边界`);
+        continue;
       }
       for (let pos = rackPosition; pos < rackPosition + units; pos += 1) {
-        const rowState = (rackRows[pos] ??= {})
-        const isTop = pos === rackPosition ? 1 : 0
+        const rowState = (rackRows[pos] ??= {});
+        const isTop = pos === rackPosition ? 1 : 0;
 
-        if ((depthMask & 4) === 4 && rowState.F && rowState.F !== item.id) warnings.push(`第 ${pos}U 前侧位置冲突：硬件 ${item.id} 与 ${rowState.F}`)
-        if ((depthMask & 2) === 2 && rowState.M && rowState.M !== item.id) warnings.push(`第 ${pos}U 中部位置冲突：硬件 ${item.id} 与 ${rowState.M}`)
-        if ((depthMask & 1) === 1 && rowState.B && rowState.B !== item.id) warnings.push(`第 ${pos}U 后侧位置冲突：硬件 ${item.id} 与 ${rowState.B}`)
+        if ((depthMask & 4) === 4 && rowState.F && rowState.F !== item.id)
+          warnings.push(`第 ${pos}U 前侧位置冲突：硬件 ${item.id} 与 ${rowState.F}`);
+        if ((depthMask & 2) === 2 && rowState.M && rowState.M !== item.id)
+          warnings.push(`第 ${pos}U 中部位置冲突：硬件 ${item.id} 与 ${rowState.M}`);
+        if ((depthMask & 1) === 1 && rowState.B && rowState.B !== item.id)
+          warnings.push(`第 ${pos}U 后侧位置冲突：硬件 ${item.id} 与 ${rowState.B}`);
 
         if ((depthMask & 4) === 4) {
-          rowState.F = item.id
-          rowState.FT = isTop
+          rowState.F = item.id;
+          rowState.FT = isTop;
         }
         if ((depthMask & 2) === 2) {
-          rowState.M = item.id
-          rowState.MT = isTop
+          rowState.M = item.id;
+          rowState.MT = isTop;
         }
         if ((depthMask & 1) === 1) {
-          rowState.B = item.id
-          rowState.BT = isTop
+          rowState.B = item.id;
+          rowState.BT = isTop;
         }
       }
-      continue
+      continue;
     }
 
     if (rackPosition - units + 1 < 1) {
-      warnings.push(`硬件 ${item.id}（${item.model || '-'}）超出机架边界`)
-      continue
+      warnings.push(`硬件 ${item.id}（${item.model || '-'}）超出机架边界`);
+      continue;
     }
 
     for (let pos = rackPosition; pos > rackPosition - units; pos -= 1) {
-      const rowState = (rackRows[pos] ??= {})
-      const isTop = pos === rackPosition ? 1 : 0
+      const rowState = (rackRows[pos] ??= {});
+      const isTop = pos === rackPosition ? 1 : 0;
 
-      if ((depthMask & 4) === 4 && rowState.F && rowState.F !== item.id) warnings.push(`第 ${pos}U 前侧位置冲突：硬件 ${item.id} 与 ${rowState.F}`)
-      if ((depthMask & 2) === 2 && rowState.M && rowState.M !== item.id) warnings.push(`第 ${pos}U 中部位置冲突：硬件 ${item.id} 与 ${rowState.M}`)
-      if ((depthMask & 1) === 1 && rowState.B && rowState.B !== item.id) warnings.push(`第 ${pos}U 后侧位置冲突：硬件 ${item.id} 与 ${rowState.B}`)
+      if ((depthMask & 4) === 4 && rowState.F && rowState.F !== item.id)
+        warnings.push(`第 ${pos}U 前侧位置冲突：硬件 ${item.id} 与 ${rowState.F}`);
+      if ((depthMask & 2) === 2 && rowState.M && rowState.M !== item.id)
+        warnings.push(`第 ${pos}U 中部位置冲突：硬件 ${item.id} 与 ${rowState.M}`);
+      if ((depthMask & 1) === 1 && rowState.B && rowState.B !== item.id)
+        warnings.push(`第 ${pos}U 后侧位置冲突：硬件 ${item.id} 与 ${rowState.B}`);
 
       if ((depthMask & 4) === 4) {
-        rowState.F = item.id
-        rowState.FT = isTop
+        rowState.F = item.id;
+        rowState.FT = isTop;
       }
       if ((depthMask & 2) === 2) {
-        rowState.M = item.id
-        rowState.MT = isTop
+        rowState.M = item.id;
+        rowState.MT = isTop;
       }
       if ((depthMask & 1) === 1) {
-        rowState.B = item.id
-        rowState.BT = isTop
+        rowState.B = item.id;
+        rowState.BT = isTop;
       }
     }
   }
 
   const unitSequence = reverse
     ? Array.from({ length: totalUnits }, (_, index) => index + 1)
-    : Array.from({ length: totalUnits }, (_, index) => totalUnits - index)
+    : Array.from({ length: totalUnits }, (_, index) => totalUnits - index);
 
-  const rows: RackViewRow[] = []
+  const rows: RackViewRow[] = [];
   for (const unit of unitSequence) {
-    const state = rackRows[unit] ?? {}
-    const cells: RackViewCell[] = []
-    let cell = 1
-    let colspan = 1
+    const state = rackRows[unit] ?? {};
+    const cells: RackViewCell[] = [];
+    let cell = 1;
+    let colspan = 1;
 
     if (state.FT) {
-      const itemID = Number(state.F ?? 0)
-      const item = itemMap.get(itemID)
+      const itemID = Number(state.F ?? 0);
+      const item = itemMap.get(itemID);
       if (item) {
-        if (state.F !== state.M) colspan = 1
-        else if (state.F === state.M && state.M !== state.B) colspan = 2
-        else colspan = 3
+        if (state.F !== state.M) colspan = 1;
+        else if (state.F === state.M && state.M !== state.B) colspan = 2;
+        else colspan = 3;
         cells.push({
           key: `${unit}-F-${itemID}`,
           kind: 'item',
@@ -267,23 +305,23 @@ function buildRackViewData(totalUnits: number, reverse: boolean, itemRows: RackI
           statusClass: getRackItemStatusClass(item.statusText),
           style: getRackItemStatusStyle(item.statusText, item.statusColor),
           highlight: itemID === highlightID,
-        })
+        });
       }
     } else if (!state.F) {
-      cells.push({ key: `${unit}-F-empty`, kind: 'empty', colspan: 1, rowspan: 1 })
-      colspan = 1
+      cells.push({ key: `${unit}-F-empty`, kind: 'empty', colspan: 1, rowspan: 1 });
+      colspan = 1;
     } else {
-      colspan = 1
+      colspan = 1;
     }
-    cell += colspan
+    cell += colspan;
 
     if (cell === 2) {
       if (state.MT) {
-        const itemID = Number(state.M ?? 0)
-        const item = itemMap.get(itemID)
+        const itemID = Number(state.M ?? 0);
+        const item = itemMap.get(itemID);
         if (item) {
-          if (state.M !== state.B) colspan = 1
-          else colspan = 2
+          if (state.M !== state.B) colspan = 1;
+          else colspan = 2;
           cells.push({
             key: `${unit}-M-${itemID}`,
             kind: 'item',
@@ -296,21 +334,21 @@ function buildRackViewData(totalUnits: number, reverse: boolean, itemRows: RackI
             statusClass: getRackItemStatusClass(item.statusText),
             style: getRackItemStatusStyle(item.statusText, item.statusColor),
             highlight: itemID === highlightID,
-          })
+          });
         }
       } else if (!state.M) {
-        cells.push({ key: `${unit}-M-empty`, kind: 'empty', colspan: 1, rowspan: 1 })
-        colspan = 1
+        cells.push({ key: `${unit}-M-empty`, kind: 'empty', colspan: 1, rowspan: 1 });
+        colspan = 1;
       } else {
-        colspan = 1
+        colspan = 1;
       }
-      cell += colspan
+      cell += colspan;
     }
 
     if (cell === 3) {
       if (state.BT) {
-        const itemID = Number(state.B ?? 0)
-        const item = itemMap.get(itemID)
+        const itemID = Number(state.B ?? 0);
+        const item = itemMap.get(itemID);
         if (item) {
           cells.push({
             key: `${unit}-B-${itemID}`,
@@ -324,51 +362,55 @@ function buildRackViewData(totalUnits: number, reverse: boolean, itemRows: RackI
             statusClass: getRackItemStatusClass(item.statusText),
             style: getRackItemStatusStyle(item.statusText, item.statusColor),
             highlight: itemID === highlightID,
-          })
+          });
         }
       } else if (!state.B) {
-        cells.push({ key: `${unit}-B-empty`, kind: 'empty', colspan: 1, rowspan: 1 })
+        cells.push({ key: `${unit}-B-empty`, kind: 'empty', colspan: 1, rowspan: 1 });
       }
     }
 
-    rows.push({ unit, cells })
+    rows.push({ unit, cells });
   }
 
-  return { rows, warnings: Array.from(new Set(warnings)), moreItems }
+  return { rows, warnings: Array.from(new Set(warnings)), moreItems };
 }
 
 const rackTotalUnits = computed(() => {
-  const total = Number(rack.value?.usize ?? 0)
-  return Number.isFinite(total) && total > 0 ? total : 0
-})
+  const total = Number(rack.value?.usize ?? 0);
+  return Number.isFinite(total) && total > 0 ? total : 0;
+});
 
-const rackReverse = computed(() => Number(rack.value?.revnums ?? 0) === 1)
+const rackReverse = computed(() => Number(rack.value?.revnums ?? 0) === 1);
 
-const rackViewData = computed(() => buildRackViewData(rackTotalUnits.value, rackReverse.value, rackItems.value, highlightItemID.value))
+const rackViewData = computed(() =>
+  buildRackViewData(rackTotalUnits.value, rackReverse.value, rackItems.value, highlightItemID.value)
+);
 
 async function loadRackView() {
   if (!rackID.value) {
-    loadError.value = '无效的机架编号'
-    return
+    loadError.value = '无效的机架编号';
+    return;
   }
 
   if (!bootstrap.loaded) {
-    await bootstrap.load()
+    await bootstrap.load();
   }
 
-  loading.value = true
-  loadError.value = ''
+  loading.value = true;
+  loadError.value = '';
   try {
     const [rackResponse, itemsResponse] = await Promise.all([
       api.get(`/racks/${rackID.value}`),
       api.get('/items', { params: { limit: -1, offset: 0 } }),
-    ])
+    ]);
 
-    rack.value = rackResponse.data as Record<string, unknown>
-    const itemRows = Array.isArray(itemsResponse.data) ? (itemsResponse.data as Record<string, unknown>[]) : []
+    rack.value = rackResponse.data as Record<string, unknown>;
+    const itemRows = Array.isArray(itemsResponse.data)
+      ? (itemsResponse.data as Record<string, unknown>[])
+      : [];
     rackItems.value = itemRows
-      .filter((row) => Number(row.rackid ?? 0) === rackID.value)
-      .map((row) => ({
+      .filter(row => Number(row.rackid ?? 0) === rackID.value)
+      .map(row => ({
         id: Number(row.id ?? 0),
         manufacturer: String(row.manufacturer ?? ''),
         model: String(row.model ?? ''),
@@ -381,33 +423,36 @@ async function loadRackView() {
         rackPosition: Number(row.rackposition ?? row.rackPosition ?? 0),
         rackPosDepth: Number(row.rackposdepth ?? row.rackPosDepth ?? 0),
       }))
-      .filter((row) => row.id > 0)
+      .filter(row => row.id > 0);
   } catch {
-    rack.value = null
-    rackItems.value = []
-    loadError.value = '机架晟图加载失败'
+    rack.value = null;
+    rackItems.value = [];
+    loadError.value = '机架晟图加载失败';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function openItemInNewWindow(id: number | undefined) {
-  if (!id) return
-  const target = router.resolve({ path: '/resources/items', query: { edit: String(id) } })
-  window.open(target.href, '_blank', 'noopener')
+  if (!id) return;
+  const target = router.resolve({ path: '/resources/items', query: { edit: String(id) } });
+  window.open(target.href, '_blank', 'noopener');
 }
 
 function closeWindow() {
-  window.close()
+  window.close();
 }
 
-watch(() => [rackID.value, highlightItemID.value] as const, () => {
-  void loadRackView()
-})
+watch(
+  () => [rackID.value, highlightItemID.value] as const,
+  () => {
+    void loadRackView();
+  }
+);
 
 onMounted(() => {
-  void loadRackView()
-})
+  void loadRackView();
+});
 </script>
 
 <template>
@@ -457,9 +502,16 @@ onMounted(() => {
                       :style="cell.style"
                     >
                       <template v-if="cell.kind === 'item'">
-                        <button class="rack-view-link" type="button" :title="cell.tip" @click="openItemInNewWindow(cell.itemID)">
+                        <button
+                          class="rack-view-link"
+                          type="button"
+                          :title="cell.tip"
+                          @click="openItemInNewWindow(cell.itemID)"
+                        >
                           <span class="rack-view-title">{{ cell.title }}</span>
-                          <span v-if="cell.subtitle" class="rack-view-subtitle">{{ cell.subtitle }}</span>
+                          <span v-if="cell.subtitle" class="rack-view-subtitle">{{
+                            cell.subtitle
+                          }}</span>
                         </button>
                       </template>
                     </td>
@@ -469,20 +521,64 @@ onMounted(() => {
                   <td colspan="4" class="rack-view-base" />
                 </tr>
                 <tr>
-                  <td colspan="2" class="rack-view-wheel"><span class="rack-view-wheel-svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="22"/><line x1="2" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="22" y2="12"/></svg></span></td>
-                  <td colspan="2" class="rack-view-wheel"><span class="rack-view-wheel-svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="22"/><line x1="2" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="22" y2="12"/></svg></span></td>
+                  <td colspan="2" class="rack-view-wheel">
+                    <span class="rack-view-wheel-svg"
+                      ><svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="3" />
+                        <line x1="12" y1="2" x2="12" y2="9" />
+                        <line x1="12" y1="15" x2="12" y2="22" />
+                        <line x1="2" y1="12" x2="9" y2="12" />
+                        <line x1="15" y1="12" x2="22" y2="12" /></svg
+                    ></span>
+                  </td>
+                  <td colspan="2" class="rack-view-wheel">
+                    <span class="rack-view-wheel-svg"
+                      ><svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="3" />
+                        <line x1="12" y1="2" x2="12" y2="9" />
+                        <line x1="12" y1="15" x2="12" y2="22" />
+                        <line x1="2" y1="12" x2="9" y2="12" />
+                        <line x1="15" y1="12" x2="22" y2="12" /></svg
+                    ></span>
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
-        <p v-else class="rack-view-page-empty">{{ rackTotalUnits > 0 ? '当前机架暂无可显示的晟图内容' : '该机架未设置高度(U)' }}</p>
+        <p v-else class="rack-view-page-empty">
+          {{ rackTotalUnits > 0 ? '当前机架暂无可显示的晟图内容' : '该机架未设置高度(U)' }}
+        </p>
 
         <div v-if="rackViewData.moreItems.length > 0" class="rack-view-side-note">
           <h5>已分配到该机架但未设置机架位置、深度位或高度的硬件</h5>
           <ul>
             <li v-for="row in rackViewData.moreItems" :key="`rack-view-more-${row.id}`">
-              <button class="rack-view-side-link" type="button" @click="openItemInNewWindow(row.id)">#{{ row.id }} {{ row.manufacturer || '-' }} {{ row.model || '-' }}</button>
+              <button
+                class="rack-view-side-link"
+                type="button"
+                @click="openItemInNewWindow(row.id)"
+              >
+                #{{ row.id }} {{ row.manufacturer || '-' }} {{ row.model || '-' }}
+              </button>
             </li>
           </ul>
         </div>

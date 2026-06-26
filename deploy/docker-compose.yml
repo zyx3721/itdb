@@ -1,0 +1,17 @@
+services:
+  itdb:
+    image: registry.cn-shenzhen.aliyuncs.com/zyx3721/itdb:latest
+    container_name: itdb
+    restart: unless-stopped
+    networks:
+      - itdb_network
+    ports:
+      - 80:80
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+
+networks:
+  itdb_network:
+    driver: bridge
