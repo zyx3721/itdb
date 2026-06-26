@@ -969,6 +969,13 @@ void load();
                 <h3>合同类型</h3>
                 <div v-if="canWrite" class="dict-panel-actions">
                   <button
+                    class="small-btn ghost-btn"
+                    :disabled="selectedContractTypeIds.length === 0"
+                    @click="clearSelectedContractTypeRows"
+                  >
+                    清空选择
+                  </button>
+                  <button
                     class="small-btn danger"
                     :disabled="selectedContractTypeIds.length === 0"
                     @click="requestRemoveSelectedContractTypeRows"
@@ -1049,6 +1056,13 @@ void load();
                 <h3>合同子类型（类型编号: {{ selectedContractTypeId }}）</h3>
                 <div v-if="canWrite" class="dict-panel-actions">
                   <button
+                    class="small-btn ghost-btn"
+                    :disabled="selectedContractSubtypeIds.length === 0"
+                    @click="clearSelectedContractSubtypeRows"
+                  >
+                    清空选择
+                  </button>
+                  <button
                     class="small-btn danger"
                     :disabled="selectedContractSubtypeIds.length === 0"
                     @click="requestRemoveSelectedContractSubtypeRows"
@@ -1118,6 +1132,13 @@ void load();
               <div class="dict-panel-head">
                 <h3>标记</h3>
                 <div v-if="canWrite" class="dict-panel-actions">
+                  <button
+                    class="small-btn ghost-btn"
+                    :disabled="selectedDictionaryIds.length === 0"
+                    @click="clearSelectedDictionaryRows"
+                  >
+                    清空选择
+                  </button>
                   <button
                     class="small-btn danger"
                     :disabled="selectedDictionaryIds.length === 0"
@@ -1239,6 +1260,13 @@ void load();
             <div class="dict-panel-head">
               <h3>{{ dictionaryConfig[active].title }}</h3>
               <div v-if="canWrite" class="dict-panel-actions">
+                <button
+                  class="small-btn ghost-btn"
+                  :disabled="selectedDictionaryIds.length === 0"
+                  @click="clearSelectedDictionaryRows"
+                >
+                  清空选择
+                </button>
                 <button
                   class="small-btn danger"
                   :disabled="selectedDictionaryIds.length === 0"

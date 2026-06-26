@@ -5453,6 +5453,22 @@ onBeforeUnmount(() => {
         <button class="ghost-btn" @click="loadRows">刷新</button>
         <button
           v-if="canWrite"
+          class="ghost-btn"
+          :disabled="totalRows === 0 || allCurrentRowsSelected"
+          @click="setAllCurrentRowsSelected(true)"
+        >
+          全选当前结果
+        </button>
+        <button
+          v-if="canWrite"
+          class="ghost-btn"
+          :disabled="selectedRowCount === 0"
+          @click="clearSelectedRows"
+        >
+          清空选择
+        </button>
+        <button
+          v-if="canWrite"
           class="danger"
           :disabled="selectedRowCount === 0"
           @click="requestRemoveSelectedRows"
