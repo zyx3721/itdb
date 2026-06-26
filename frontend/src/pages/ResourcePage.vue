@@ -5491,8 +5491,10 @@ onBeforeUnmount(() => {
         </select>
         <span>条</span>
       </div>
-      <div class="table-meta">显示 {{ pageStart }} - {{ pageEnd }}，共 {{ totalRows }} 条</div>
-      <div v-if="canWrite" class="table-selection-meta">已选 {{ selectedRowCount }} 条</div>
+      <div class="table-toolbar-meta">
+        <div v-if="canWrite" class="table-selection-meta">已选 {{ selectedRowCount }} 条</div>
+        <div class="table-meta">显示 {{ pageStart }} - {{ pageEnd }}，共 {{ totalRows }} 条</div>
+      </div>
     </div>
 
     <div class="table-wrap" v-if="!loading">
@@ -11134,9 +11136,16 @@ onBeforeUnmount(() => {
 .table-toolbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 12px;
   margin-bottom: 10px;
+}
+
+.table-toolbar-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .length-control {
