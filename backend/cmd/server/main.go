@@ -19,10 +19,12 @@ import (
 
 	"itdb-backend/cmd/common/localizer"
 	"itdb-backend/cmd/common/statustypes"
+	_ "itdb-backend/docs"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/golang-jwt/jwt/v5"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 	_ "modernc.org/sqlite"
 )
 
@@ -533,6 +535,7 @@ func (a *App) routes() http.Handler {
 	r.Get("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 	})
+	r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL("/swagger/doc.json")))
 
 	r.Post("/api/auth/login", a.handleLogin)
 	r.Group(func(r chi.Router) {

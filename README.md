@@ -88,6 +88,7 @@ itdb/
 │  │  ├─ server/                    # HTTP 服务、路由处理、数据库初始化与业务逻辑
 │  │  └─ common/                    # 本地化、基础类型和通用工具
 │  ├─ data/                         # SQLite 数据库、上传文件和备份目录（运行时生成）
+│  ├─ docs/                         # Swagger/OpenAPI 生成文件
 │  ├─ scripts/                      # 数据库备份脚本
 │  ├─ .env.example                  # 后端环境变量模板
 │  ├─ go.mod / go.sum               # Go 模块依赖
@@ -764,34 +765,141 @@ systemctl reload nginx
 
 # 五、API 文档
 
-所有接口以 `/api` 为前缀，除登录接口外均需在请求头携带 `Authorization: Bearer <token>`。
+后端已集成 Swagger/OpenAPI 文档，启动后可通过以下地址查看在线接口文档：
+
+- **Swagger UI**：`http://localhost:8080/swagger/index.html`
+- **OpenAPI JSON**：`http://localhost:8080/swagger/doc.json`
+- **健康检查**：`GET /health`、`GET /api/health`
+
+除 `POST /api/auth/login`、`GET /health` 和 `GET /api/health` 外，其他接口均需要在请求头中携带 `Authorization: Bearer <token>`。
 
 写操作接口（POST / PUT / DELETE）需要管理员权限，只读用户仅可访问 GET 接口。
 
-| 模块 | 前缀 | 主要操作 |
-|------|------|----------|
-| 认证 | `/api/auth` | 登录、登出、获取当前用户 |
-| 硬件资产 | `/api/items` | CRUD、操作记录、标签关联 |
-| 软件许可 | `/api/software` | CRUD、标签关联 |
-| 合同 | `/api/contracts` | CRUD、合同事件 |
-| 发票 | `/api/invoices` | CRUD |
-| 文件 | `/api/files` | CRUD、上传下载 |
-| 厂商/代理商 | `/api/agents` | CRUD |
-| 用户 | `/api/users` | CRUD |
-| 位置 | `/api/locations` | CRUD、区域管理、平面图 |
-| 机柜 | `/api/racks` | CRUD |
-| 字典 | `/api/dictionaries` | 增删改（硬件类型、合同类型、部门、状态等） |
-| 标签 | `/api/tags` | CRUD、建议、关联查询 |
-| 报表 | `/api/reports` | 列表、执行 |
-| 标签打印 | `/api/labels` | 资产列表、预设管理、预览 |
-| 浏览树 | `/api/browse/tree` | 树形结构浏览 |
-| 仪表盘 | `/api/dashboard/summary` | 统计概览 |
-| 操作历史 | `/api/history` | 列表、导出 Excel |
-| 浏览历史 | `/api/view-history` | 列表、记录 |
-| 系统设置 | `/api/settings` | 获取、更新、LDAP 测试 |
-| 备份下载 | `/api/backups` | 数据库备份、全量备份下载 |
-| 数据库导入 | `/api/import/database` | 上传 .db 文件替换当前数据库 |
-| 健康检查 | `/health`、`/api/health` | 服务状态 |
+## 5.1 认证与启动数据
+
+- `POST /api/auth/login` - 用户登录，支持本地密码和 LDAP 模式
+- `GET /api/auth/me` - 获取当前登录用户信息
+- `POST /api/auth/logout` - 登出当前会话
+- `GET /api/bootstrap` - 获取前端启动所需字典、用户、位置、机架等基础数据
+- `GET /api/dashboard/summary` - 获取仪表盘资源统计概览
+
+登录请求示例：
+
+```json
+{
+  "username": "admin",
+  "password": "admin123",
+  "mode": "local"
+}
+```
+
+## 5.2 核心资产资源
+
+- `GET /api/items?search=&limit=50&offset=0` - 获取硬件资产列表
+- `GET /api/items/{id}` - 获取硬件资产详情，包含关联发票、软件、合同、文件、标签和操作记录
+- `POST /api/items` - 创建硬件资产
+- `PUT /api/items/{id}` - 更新硬件资产
+- `DELETE /api/items/{id}` - 删除硬件资产
+- `POST /api/items/{id}/tags` - 关联或移除硬件标签
+- `GET /api/items/{id}/actions` - 获取硬件操作记录
+- `POST /api/items/{id}/actions` - 创建硬件操作记录
+- `PUT /api/items/{id}/actions/{actionId}` - 更新硬件操作记录
+- `DELETE /api/items/{id}/actions/{actionId}` - 删除硬件操作记录
+
+## 5.3 软件、发票与合同
+
+- `GET /api/software?search=&limit=50&offset=0` - 获取软件许可列表
+- `GET /api/software/{id}` - 获取软件许可详情
+- `POST /api/software` - 创建软件许可
+- `PUT /api/software/{id}` - 更新软件许可
+- `DELETE /api/software/{id}` - 删除软件许可
+- `POST /api/software/{id}/tags` - 关联或移除软件标签
+- `GET /api/invoices?search=&limit=50&offset=0` - 获取发票列表
+- `GET /api/invoices/{id}` - 获取发票详情
+- `POST /api/invoices` - 创建发票
+- `PUT /api/invoices/{id}` - 更新发票
+- `DELETE /api/invoices/{id}` - 删除发票
+- `GET /api/contracts?search=&limit=50&offset=0` - 获取合同列表
+- `GET /api/contracts/{id}` - 获取合同详情
+- `POST /api/contracts` - 创建合同
+- `PUT /api/contracts/{id}` - 更新合同
+- `DELETE /api/contracts/{id}` - 删除合同
+- `GET /api/contracts/{id}/events` - 获取合同事件
+- `POST /api/contracts/{id}/events` - 创建合同事件
+- `PUT /api/contracts/{id}/events/{eventId}` - 更新合同事件
+- `DELETE /api/contracts/{id}/events/{eventId}` - 删除合同事件
+
+## 5.4 文件、位置与机柜
+
+- `GET /api/files?search=` - 获取文件列表
+- `GET /api/files/{id}` - 获取文件详情
+- `GET /api/files/{id}/download` - 下载文件
+- `POST /api/files` - 上传文件，使用 `multipart/form-data`
+- `PUT /api/files/{id}` - 更新文件，可选择替换上传文件
+- `DELETE /api/files/{id}` - 删除文件
+- `GET /api/locations?search=` - 获取位置列表
+- `GET /api/locations/{id}` - 获取位置详情，包含区域列表
+- `GET /api/locations/{id}/floorplan` - 查看位置平面图
+- `POST /api/locations` - 创建位置，可上传平面图
+- `PUT /api/locations/{id}` - 更新位置，可替换平面图
+- `DELETE /api/locations/{id}` - 删除位置
+- `GET /api/locations/{id}/areas` - 获取位置区域
+- `POST /api/locations/{id}/areas` - 创建位置区域
+- `PUT /api/locations/{id}/areas/{areaId}` - 更新位置区域
+- `DELETE /api/locations/{id}/areas/{areaId}` - 删除位置区域
+- `GET /api/racks?search=` - 获取机柜列表
+- `GET /api/racks/{id}` - 获取机柜详情
+- `POST /api/racks` - 创建机柜
+- `PUT /api/racks/{id}` - 更新机柜
+- `DELETE /api/racks/{id}` - 删除机柜
+
+## 5.5 厂商、用户、字典与标签
+
+- `GET /api/agents?search=&limit=50&offset=0` - 获取厂商 / 代理商列表
+- `GET /api/agents/{id}` - 获取厂商 / 代理商详情
+- `POST /api/agents` - 创建厂商 / 代理商
+- `PUT /api/agents/{id}` - 更新厂商 / 代理商
+- `DELETE /api/agents/{id}` - 删除厂商 / 代理商
+- `GET /api/users?search=&limit=25&offset=0` - 获取用户列表
+- `GET /api/users/{id}` - 获取用户详情
+- `POST /api/users` - 创建用户
+- `PUT /api/users/{id}` - 更新用户
+- `DELETE /api/users/{id}` - 删除用户
+- `GET /api/dictionaries` - 获取所有字典数据
+- `POST /api/dictionaries/{name}` - 创建字典行
+- `PUT /api/dictionaries/{name}/{id}` - 更新字典行
+- `DELETE /api/dictionaries/{name}/{id}` - 删除字典行
+- `GET /api/tags?search=` - 获取标签列表
+- `GET /api/tags/suggest?term=` - 获取标签建议
+- `POST /api/tags` - 创建标签
+- `PUT /api/tags/{id}` - 更新标签
+- `DELETE /api/tags/{id}` - 删除标签
+- `GET /api/tags/{id}/items` - 获取标签关联硬件
+- `GET /api/tags/{id}/software` - 获取标签关联软件
+
+## 5.6 报表、浏览树与标签打印
+
+- `GET /api/reports` - 获取报表定义列表
+- `GET /api/reports/{name}?limit=1000` - 执行指定报表
+- `GET /api/browse/tree?id=` - 获取资源浏览树节点
+- `GET /api/labels/items?search=&orderBy=&limit=1000&offset=0` - 获取可打印标签的资产列表
+- `GET /api/labels/presets` - 获取标签纸预设
+- `POST /api/labels/preview` - 生成标签打印预览数据
+- `POST /api/labels/presets` - 创建标签纸预设
+- `DELETE /api/labels/presets/{id}` - 删除标签纸预设
+
+## 5.7 系统设置、历史与运维
+
+- `GET /api/settings` - 获取系统设置
+- `PUT /api/settings` - 更新系统设置
+- `POST /api/settings/test-ldap` - 测试 LDAP 连接
+- `GET /api/history?search=&limit=25&offset=0` - 获取操作历史
+- `GET /api/history/export` - 导出操作历史 Excel
+- `GET /api/view-history` - 获取最近浏览历史
+- `POST /api/view-history` - 记录最近浏览历史
+- `GET /api/backups/database` - 下载当前 SQLite 数据库备份
+- `GET /api/backups/full` - 下载全量备份包
+- `POST /api/import/database` - 上传 `.db` 文件替换当前数据库，并自动执行兼容迁移
 
 # 六、数据库说明
 

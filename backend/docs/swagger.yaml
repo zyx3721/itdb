@@ -1,0 +1,2811 @@
+basePath: /
+definitions:
+  server.SessionUser:
+    properties:
+      id:
+        type: integer
+      userType:
+        type: integer
+      username:
+        type: string
+    type: object
+  server.agentContact:
+    properties:
+      comments:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      phones:
+        type: string
+      role:
+        type: string
+    type: object
+  server.agentPayload:
+    properties:
+      contactInfo:
+        type: string
+      contacts:
+        items:
+          $ref: '#/definitions/server.agentContact'
+        type: array
+      title:
+        type: string
+      type:
+        type: integer
+      types:
+        items:
+          type: integer
+        type: array
+      urls:
+        items:
+          $ref: '#/definitions/server.agentURL'
+        type: array
+    type: object
+  server.agentURL:
+    properties:
+      description:
+        type: string
+      url:
+        type: string
+    type: object
+  server.authLoginRequest:
+    properties:
+      mode:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  server.authLoginResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/server.SessionUser'
+    type: object
+  server.browseNode:
+    properties:
+      entityId:
+        type: integer
+      id:
+        type: string
+      label:
+        type: string
+      leaf:
+        type: boolean
+      resource:
+        type: string
+    type: object
+  server.contractEventPayload:
+    properties:
+      description:
+        type: string
+      endDate:
+        type: string
+      siblingId:
+        type: integer
+      startDate:
+        type: string
+    type: object
+  server.contractPayload:
+    properties:
+      cleanupFileLinks:
+        items:
+          type: integer
+        type: array
+      comments:
+        type: string
+      contractorId:
+        type: integer
+      currentEndDate:
+        type: string
+      description:
+        type: string
+      fileLinks:
+        items:
+          type: integer
+        type: array
+      invoiceLinks:
+        items:
+          type: integer
+        type: array
+      itemLinks:
+        items:
+          type: integer
+        type: array
+      number:
+        type: string
+      parentId:
+        type: integer
+      renewals:
+        type: string
+      softwareLinks:
+        items:
+          type: integer
+        type: array
+      startDate:
+        type: string
+      subTypeId:
+        type: integer
+      title:
+        type: string
+      totalCost:
+        type: string
+      typeId:
+        type: integer
+    type: object
+  server.invoicePayload:
+    properties:
+      buyerId:
+        type: integer
+      cleanupFileLinks:
+        items:
+          type: integer
+        type: array
+      contractLinks:
+        items:
+          type: integer
+        type: array
+      date:
+        type: string
+      description:
+        type: string
+      fileLinks:
+        items:
+          type: integer
+        type: array
+      itemLinks:
+        items:
+          type: integer
+        type: array
+      number:
+        type: string
+      softwareLinks:
+        items:
+          type: integer
+        type: array
+      vendorId:
+        type: integer
+    type: object
+  server.itemActionPayload:
+    properties:
+      actionDate:
+        type: string
+      description:
+        type: string
+      invoiceInfo:
+        type: string
+    type: object
+  server.itemPayload:
+    properties:
+      cleanupFileLinks:
+        items:
+          type: integer
+        type: array
+      comments:
+        type: string
+      contractLinks:
+        items:
+          type: integer
+        type: array
+      coresPerCpu:
+        type: string
+      cpu:
+        type: string
+      cpuNo:
+        type: string
+      dnsName:
+        type: string
+      dptId:
+        type: integer
+      fileLinks:
+        items:
+          type: integer
+        type: array
+      function:
+        type: string
+      hd:
+        type: string
+      invoiceLinks:
+        items:
+          type: integer
+        type: array
+      ipv4:
+        type: string
+      ipv6:
+        type: string
+      isPart:
+        type: integer
+      itemLinks:
+        items:
+          type: integer
+        type: array
+      itemTypeId:
+        type: integer
+      label:
+        type: string
+      locAreaId:
+        type: integer
+      locationId:
+        type: integer
+      macs:
+        type: string
+      maintenanceInfo:
+        type: string
+      manufacturerId:
+        type: integer
+      model:
+        type: string
+      origin:
+        type: string
+      panelPort:
+        type: string
+      ports:
+        type: string
+      principal:
+        type: string
+      purchPrice:
+        type: string
+      purchaseDate:
+        type: string
+      rackId:
+        type: integer
+      rackMountable:
+        type: integer
+      rackPosDepth:
+        type: integer
+      rackPosition:
+        type: integer
+      raid:
+        type: string
+      raidConfig:
+        type: string
+      ram:
+        type: string
+      remAdmIp:
+        type: string
+      sn:
+        type: string
+      sn2:
+        type: string
+      sn3:
+        type: string
+      softwareLinks:
+        items:
+          type: integer
+        type: array
+      status:
+        type: integer
+      switchId:
+        type: integer
+      switchPort:
+        type: string
+      uSize:
+        type: integer
+      userId:
+        type: integer
+      warrInfo:
+        type: string
+      warrantyMonths:
+        type: integer
+    type: object
+  server.locAreaPayload:
+    properties:
+      areaName:
+        type: string
+    type: object
+  server.rackPayload:
+    properties:
+      comments:
+        type: string
+      depth:
+        type: integer
+      label:
+        type: string
+      locAreaId:
+        type: integer
+      locationId:
+        type: integer
+      model:
+        type: string
+      revNums:
+        type: integer
+      uSize:
+        type: integer
+    type: object
+  server.reportDefinition:
+    properties:
+      chartLimit:
+        type: integer
+      chartType:
+        type: string
+      chartX:
+        type: string
+      chartY:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  server.settingsPayload:
+    properties:
+      ldapBindDn:
+        type: string
+      ldapBindPassword:
+        type: string
+      ldapDn:
+        type: string
+      ldapGetUsers:
+        type: string
+      ldapGetUsersFilter:
+        type: string
+      ldapServer:
+        type: string
+      useLdap:
+        type: integer
+    type: object
+  server.softwarePayload:
+    properties:
+      cleanupFileLinks:
+        items:
+          type: integer
+        type: array
+      contractLinks:
+        items:
+          type: integer
+        type: array
+      fileLinks:
+        items:
+          type: integer
+        type: array
+      info:
+        type: string
+      invoiceId:
+        type: integer
+      invoiceLinks:
+        items:
+          type: integer
+        type: array
+      itemLinks:
+        items:
+          type: integer
+        type: array
+      licenseQty:
+        type: integer
+      licenseType:
+        type: integer
+      manufacturerId:
+        type: integer
+      purchaseDate:
+        type: string
+      slicenseInfo:
+        type: string
+      title:
+        type: string
+      version:
+        type: string
+    type: object
+  server.swaggerDashboardSummaryResponse:
+    properties:
+      counts:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+    type: object
+  server.swaggerDictionaryPayload:
+    additionalProperties: true
+    type: object
+  server.swaggerErrorResponse:
+    properties:
+      error:
+        example: 请求参数错误
+        type: string
+    type: object
+  server.swaggerGenericObject:
+    additionalProperties: true
+    type: object
+  server.swaggerHealthResponse:
+    properties:
+      status:
+        example: ok
+        type: string
+    type: object
+  server.swaggerIDResponse:
+    properties:
+      id:
+        example: 1
+        type: integer
+    type: object
+  server.swaggerImportDatabaseResponse:
+    properties:
+      message:
+        example: 数据库导入成功
+        type: string
+      ok:
+        example: true
+        type: boolean
+    type: object
+  server.swaggerLabelPreviewRequest:
+    properties:
+      itemIds:
+        example:
+        - 1
+        - 2
+        - 3
+        items:
+          type: integer
+        type: array
+      preset:
+        example: A4-3x8
+        type: string
+    type: object
+  server.swaggerMessageResponse:
+    properties:
+      message:
+        example: 操作成功
+        type: string
+    type: object
+  server.swaggerOKResponse:
+    properties:
+      ok:
+        example: true
+        type: boolean
+    type: object
+  server.swaggerReportRunResponse:
+    properties:
+      chart:
+        items:
+          additionalProperties: true
+          type: object
+        type: array
+      meta:
+        additionalProperties: true
+        type: object
+      rows:
+        items:
+          additionalProperties: true
+          type: object
+        type: array
+    type: object
+  server.swaggerTagPayload:
+    properties:
+      name:
+        example: 生产
+        type: string
+    type: object
+  server.tagMutationPayload:
+    properties:
+      action:
+        type: string
+      name:
+        type: string
+    type: object
+  server.userPayload:
+    properties:
+      password:
+        type: string
+      userDesc:
+        type: string
+      userType:
+        type: integer
+      username:
+        type: string
+    type: object
+  server.viewHistoryRequest:
+    properties:
+      description:
+        type: string
+      url:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: ITDB IT 资产管理系统后端 API 文档。除登录和健康检查外，接口默认需要 Bearer Token。
+  title: ITDB API
+  version: 1.0.0
+paths:
+  /api/agents:
+    get:
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      - description: 返回数量，-1 表示全部
+        in: query
+        name: limit
+        type: integer
+      - description: 偏移量
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取厂商/代理商列表
+      tags:
+      - 厂商代理
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 厂商/代理商
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.agentPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建厂商/代理商
+      tags:
+      - 厂商代理
+  /api/agents/{id}:
+    delete:
+      parameters:
+      - description: 厂商/代理商 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除厂商/代理商
+      tags:
+      - 厂商代理
+    get:
+      parameters:
+      - description: 厂商/代理商 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取厂商/代理商详情
+      tags:
+      - 厂商代理
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: 厂商/代理商 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 厂商/代理商
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.agentPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新厂商/代理商
+      tags:
+      - 厂商代理
+  /api/auth/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 登录信息
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.authLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.authLoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.swaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/server.swaggerErrorResponse'
+      summary: 用户登录
+      tags:
+      - 认证
+  /api/auth/logout:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 登出当前会话
+      tags:
+      - 认证
+  /api/auth/me:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerGenericObject'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/server.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 获取当前用户
+      tags:
+      - 认证
+  /api/backups/database:
+    get:
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+      security:
+      - BearerAuth: []
+      summary: 下载数据库备份
+      tags:
+      - 备份
+  /api/backups/full:
+    get:
+      produces:
+      - application/gzip
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+      security:
+      - BearerAuth: []
+      summary: 下载全量备份
+      tags:
+      - 备份
+  /api/bootstrap:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取前端启动字典数据
+      tags:
+      - 启动数据
+  /api/browse/tree:
+    get:
+      parameters:
+      - description: 节点 ID
+        in: query
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.browseNode'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取浏览树
+      tags:
+      - 浏览树
+  /api/contracts:
+    get:
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      - description: 返回数量，-1 表示全部
+        in: query
+        name: limit
+        type: integer
+      - description: 偏移量
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取合同列表
+      tags:
+      - 合同
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 合同
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.contractPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建合同
+      tags:
+      - 合同
+  /api/contracts/{id}:
+    delete:
+      parameters:
+      - description: 合同 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除合同
+      tags:
+      - 合同
+    get:
+      parameters:
+      - description: 合同 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取合同详情
+      tags:
+      - 合同
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: 合同 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 合同
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.contractPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新合同
+      tags:
+      - 合同
+  /api/contracts/{id}/events:
+    get:
+      parameters:
+      - description: 合同 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取合同事件
+      tags:
+      - 合同事件
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 合同 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 合同事件
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.contractEventPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建合同事件
+      tags:
+      - 合同事件
+  /api/contracts/{id}/events/{eventId}:
+    delete:
+      parameters:
+      - description: 合同 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 事件 ID
+        in: path
+        name: eventId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除合同事件
+      tags:
+      - 合同事件
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: 合同 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 事件 ID
+        in: path
+        name: eventId
+        required: true
+        type: integer
+      - description: 合同事件
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.contractEventPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新合同事件
+      tags:
+      - 合同事件
+  /api/dashboard/summary:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerDashboardSummaryResponse'
+      security:
+      - BearerAuth: []
+      summary: 获取仪表盘统计
+      tags:
+      - 仪表盘
+  /api/dictionaries:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取所有字典数据
+      tags:
+      - 字典
+  /api/dictionaries/{name}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 字典名称
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: 字典行
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.swaggerDictionaryPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建字典行
+      tags:
+      - 字典
+  /api/dictionaries/{name}/{id}:
+    delete:
+      parameters:
+      - description: 字典名称
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: 字典行 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除字典行
+      tags:
+      - 字典
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: 字典名称
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: 字典行 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 字典行
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.swaggerDictionaryPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新字典行
+      tags:
+      - 字典
+  /api/files:
+    get:
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取文件列表
+      tags:
+      - 文件
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: 标题
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: 文件类型 ID
+        in: formData
+        name: typeId
+        required: true
+        type: integer
+      - description: 签署日期
+        in: formData
+        name: date
+        required: true
+        type: string
+      - description: 文件
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: 关联硬件 ID，逗号分隔
+        in: formData
+        name: itemLinks
+        type: string
+      - description: 关联软件 ID，逗号分隔
+        in: formData
+        name: softwareLinks
+        type: string
+      - description: 关联发票 ID，逗号分隔
+        in: formData
+        name: invoiceLinks
+        type: string
+      - description: 关联合同 ID，逗号分隔
+        in: formData
+        name: contractLinks
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 上传文件
+      tags:
+      - 文件
+  /api/files/{id}:
+    delete:
+      parameters:
+      - description: 文件 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除文件
+      tags:
+      - 文件
+    get:
+      parameters:
+      - description: 文件 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取文件详情
+      tags:
+      - 文件
+    put:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: 文件 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 标题
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: 文件类型 ID
+        in: formData
+        name: typeId
+        required: true
+        type: integer
+      - description: 签署日期
+        in: formData
+        name: date
+        required: true
+        type: string
+      - description: 替换文件
+        in: formData
+        name: file
+        type: file
+      - description: 关联硬件 ID，逗号分隔
+        in: formData
+        name: itemLinks
+        type: string
+      - description: 关联软件 ID，逗号分隔
+        in: formData
+        name: softwareLinks
+        type: string
+      - description: 关联发票 ID，逗号分隔
+        in: formData
+        name: invoiceLinks
+        type: string
+      - description: 关联合同 ID，逗号分隔
+        in: formData
+        name: contractLinks
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新文件
+      tags:
+      - 文件
+  /api/files/{id}/download:
+    get:
+      parameters:
+      - description: 文件 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+      security:
+      - BearerAuth: []
+      summary: 下载文件
+      tags:
+      - 文件
+  /api/health:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerHealthResponse'
+      summary: API 健康检查
+      tags:
+      - 健康检查
+  /api/history:
+    get:
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      - description: 返回数量
+        in: query
+        name: limit
+        type: integer
+      - description: 偏移量
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取操作历史
+      tags:
+      - 操作历史
+  /api/history/export:
+    get:
+      produces:
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+      security:
+      - BearerAuth: []
+      summary: 导出操作历史
+      tags:
+      - 操作历史
+  /api/import/database:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: SQLite .db 文件
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerImportDatabaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 导入 SQLite 数据库
+      tags:
+      - 数据库导入
+  /api/invoices:
+    get:
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      - description: 返回数量，-1 表示全部
+        in: query
+        name: limit
+        type: integer
+      - description: 偏移量
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取发票列表
+      tags:
+      - 发票
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 发票
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.invoicePayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建发票
+      tags:
+      - 发票
+  /api/invoices/{id}:
+    delete:
+      parameters:
+      - description: 发票 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除发票
+      tags:
+      - 发票
+    get:
+      parameters:
+      - description: 发票 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取发票详情
+      tags:
+      - 发票
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: 发票 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 发票
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.invoicePayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新发票
+      tags:
+      - 发票
+  /api/items:
+    get:
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      - description: 返回数量，-1 表示全部
+        in: query
+        name: limit
+        type: integer
+      - description: 偏移量
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取硬件资产列表
+      tags:
+      - 硬件资产
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 硬件资产
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.itemPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.swaggerErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/server.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建硬件资产
+      tags:
+      - 硬件资产
+  /api/items/{id}:
+    delete:
+      parameters:
+      - description: 硬件资产 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerOKResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/server.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除硬件资产
+      tags:
+      - 硬件资产
+    get:
+      parameters:
+      - description: 硬件资产 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerGenericObject'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 获取硬件资产详情
+      tags:
+      - 硬件资产
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: 硬件资产 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 硬件资产
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.itemPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.swaggerErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/server.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新硬件资产
+      tags:
+      - 硬件资产
+  /api/items/{id}/actions:
+    get:
+      parameters:
+      - description: 硬件资产 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取硬件操作记录
+      tags:
+      - 硬件操作记录
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 硬件资产 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 操作记录
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.itemActionPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建硬件操作记录
+      tags:
+      - 硬件操作记录
+  /api/items/{id}/actions/{actionId}:
+    delete:
+      parameters:
+      - description: 硬件资产 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 操作记录 ID
+        in: path
+        name: actionId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除硬件操作记录
+      tags:
+      - 硬件操作记录
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: 硬件资产 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 操作记录 ID
+        in: path
+        name: actionId
+        required: true
+        type: integer
+      - description: 操作记录
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.itemActionPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新硬件操作记录
+      tags:
+      - 硬件操作记录
+  /api/items/{id}/tags:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 硬件资产 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 标签操作
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.tagMutationPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 关联或移除硬件标签
+      tags:
+      - 硬件资产
+  /api/labels/items:
+    get:
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      - description: 排序字段
+        in: query
+        name: orderBy
+        type: string
+      - description: 返回数量
+        in: query
+        name: limit
+        type: integer
+      - description: 偏移量
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取标签打印资产
+      tags:
+      - 标签打印
+  /api/labels/presets:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取标签纸预设
+      tags:
+      - 标签打印
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 标签纸预设
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.swaggerDictionaryPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建标签纸预设
+      tags:
+      - 标签打印
+  /api/labels/presets/{id}:
+    delete:
+      parameters:
+      - description: 标签纸预设 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除标签纸预设
+      tags:
+      - 标签打印
+  /api/labels/preview:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 标签预览参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.swaggerLabelPreviewRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 预览标签打印
+      tags:
+      - 标签打印
+  /api/locations:
+    get:
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取位置列表
+      tags:
+      - 位置
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: 位置名称
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: 楼层
+        in: formData
+        name: floor
+        required: true
+        type: string
+      - description: 平面图
+        in: formData
+        name: file
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建位置
+      tags:
+      - 位置
+  /api/locations/{id}:
+    delete:
+      parameters:
+      - description: 位置 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除位置
+      tags:
+      - 位置
+    get:
+      parameters:
+      - description: 位置 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取位置详情
+      tags:
+      - 位置
+    put:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: 位置 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 位置名称
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: 楼层
+        in: formData
+        name: floor
+        required: true
+        type: string
+      - description: 平面图
+        in: formData
+        name: file
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新位置
+      tags:
+      - 位置
+  /api/locations/{id}/areas:
+    get:
+      parameters:
+      - description: 位置 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取位置区域
+      tags:
+      - 位置区域
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 位置 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 区域
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.locAreaPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建位置区域
+      tags:
+      - 位置区域
+  /api/locations/{id}/areas/{areaId}:
+    delete:
+      parameters:
+      - description: 位置 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 区域 ID
+        in: path
+        name: areaId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除位置区域
+      tags:
+      - 位置区域
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: 位置 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 区域 ID
+        in: path
+        name: areaId
+        required: true
+        type: integer
+      - description: 区域
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.locAreaPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新位置区域
+      tags:
+      - 位置区域
+  /api/locations/{id}/floorplan:
+    get:
+      parameters:
+      - description: 位置 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+      security:
+      - BearerAuth: []
+      summary: 查看位置平面图
+      tags:
+      - 位置
+  /api/racks:
+    get:
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取机柜列表
+      tags:
+      - 机柜
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 机柜
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.rackPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建机柜
+      tags:
+      - 机柜
+  /api/racks/{id}:
+    delete:
+      parameters:
+      - description: 机柜 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除机柜
+      tags:
+      - 机柜
+    get:
+      parameters:
+      - description: 机柜 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取机柜详情
+      tags:
+      - 机柜
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: 机柜 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 机柜
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.rackPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新机柜
+      tags:
+      - 机柜
+  /api/reports:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.reportDefinition'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取报表列表
+      tags:
+      - 报表
+  /api/reports/{name}:
+    get:
+      parameters:
+      - description: 报表名称
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: 返回数量
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerReportRunResponse'
+      security:
+      - BearerAuth: []
+      summary: 执行报表
+      tags:
+      - 报表
+  /api/settings:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取系统设置
+      tags:
+      - 系统设置
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: 系统设置
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.settingsPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerGenericObject'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/server.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新系统设置
+      tags:
+      - 系统设置
+  /api/settings/test-ldap:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: LDAP 设置
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.settingsPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerMessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.swaggerErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/server.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 测试 LDAP 连接
+      tags:
+      - 系统设置
+  /api/software:
+    get:
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      - description: 返回数量，-1 表示全部
+        in: query
+        name: limit
+        type: integer
+      - description: 偏移量
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取软件许可列表
+      tags:
+      - 软件许可
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 软件许可
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.softwarePayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建软件许可
+      tags:
+      - 软件许可
+  /api/software/{id}:
+    delete:
+      parameters:
+      - description: 软件许可 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除软件许可
+      tags:
+      - 软件许可
+    get:
+      parameters:
+      - description: 软件许可 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取软件许可详情
+      tags:
+      - 软件许可
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: 软件许可 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 软件许可
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.softwarePayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新软件许可
+      tags:
+      - 软件许可
+  /api/software/{id}/tags:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 软件许可 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 标签操作
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.tagMutationPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 关联或移除软件标签
+      tags:
+      - 软件许可
+  /api/tags:
+    get:
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取标签列表
+      tags:
+      - 标签
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 标签
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.swaggerTagPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建标签
+      tags:
+      - 标签
+  /api/tags/{id}:
+    delete:
+      parameters:
+      - description: 标签 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除标签
+      tags:
+      - 标签
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: 标签 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 标签
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.swaggerTagPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新标签
+      tags:
+      - 标签
+  /api/tags/{id}/items:
+    get:
+      parameters:
+      - description: 标签 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取标签关联硬件
+      tags:
+      - 标签
+  /api/tags/{id}/software:
+    get:
+      parameters:
+      - description: 标签 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取标签关联软件
+      tags:
+      - 标签
+  /api/tags/suggest:
+    get:
+      parameters:
+      - description: 输入关键词
+        in: query
+        name: term
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 标签建议
+      tags:
+      - 标签
+  /api/users:
+    get:
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      - description: 返回数量
+        in: query
+        name: limit
+        type: integer
+      - description: 偏移量
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取用户列表
+      tags:
+      - 用户
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 用户
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.userPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建用户
+      tags:
+      - 用户
+  /api/users/{id}:
+    delete:
+      parameters:
+      - description: 用户 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除用户
+      tags:
+      - 用户
+    get:
+      parameters:
+      - description: 用户 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取用户详情
+      tags:
+      - 用户
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: 用户 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 用户
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.userPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新用户
+      tags:
+      - 用户
+  /api/view-history:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取浏览历史
+      tags:
+      - 浏览历史
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 浏览历史
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.viewHistoryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerOKResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 记录浏览历史
+      tags:
+      - 浏览历史
+  /health:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.swaggerHealthResponse'
+      summary: 健康检查
+      tags:
+      - 健康检查
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
