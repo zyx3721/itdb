@@ -79,7 +79,7 @@ jobs:
 
           echo "📝 生成校验和..."
           cd dist
-          sha256sum *.tar.gz *.zip > checksums.txt
+          sha256sum *.tar.gz > checksums.txt
           cd ..
 
           echo "✅ 编译完成"
@@ -171,7 +171,6 @@ jobs:
           generate_release_notes: false
           files: |
             backend/dist/*.tar.gz
-            backend/dist/*.zip
             backend/dist/checksums.txt
             frontend/dist-release/*.tar.gz
             frontend/dist-release/checksums.txt
