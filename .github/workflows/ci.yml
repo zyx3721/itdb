@@ -64,14 +64,14 @@ jobs:
           }
 
           echo "🔨 编译 Linux AMD64..."
-          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o itdb ./cmd/server/main.go
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o itdb ./main.go
           prepare_package "dist/linux_amd64"
           mv itdb dist/linux_amd64/
           tar -czf dist/itdb_${VERSION}_linux_amd64.tar.gz -C dist linux_amd64
           rm -rf dist/linux_amd64
 
           echo "🔨 编译 Linux ARM64..."
-          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o itdb ./cmd/server/main.go
+          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o itdb ./main.go
           prepare_package "dist/linux_arm64"
           mv itdb dist/linux_arm64/
           tar -czf dist/itdb_${VERSION}_linux_arm64.tar.gz -C dist linux_arm64
@@ -135,7 +135,7 @@ jobs:
           fi
 
           cat > release_notes.md << EOF
-          ## 🎉 KVM Manager v${VERSION} 发布
+          ## 🎉 itdb v${VERSION} 发布
 
           ### 📋 构建信息
           - **版本**: v${VERSION}

@@ -70,11 +70,11 @@ func (a *App) handleImportDatabase(w http.ResponseWriter, r *http.Request) {
 	// 备份当前数据库到 data/backups/ 目录（VACUUM INTO）
 	backupPath, err := backupDatabaseBeforeAlter(a.db, dbPath, "import-database")
 	if err != nil {
-		log.Printf("导入前备份失败: %v", err)
+		log.Printf("Pre-import backup failed: %v", err)
 		writeError(w, http.StatusInternalServerError, "备份当前数据库失败，导入已取消")
 		return
 	}
-	log.Printf("导入前备份完成: %s", backupPath)
+	log.Printf("Pre-import backup completed: %s", backupPath)
 
 	// 关闭当前数据库连接
 	a.db.Close()
@@ -85,7 +85,7 @@ func (a *App) handleImportDatabase(w http.ResponseWriter, r *http.Request) {
 
 	// 直接覆盖写入新文件
 	if err := copyFile(tmpPath, absPath); err != nil {
-		log.Printf("复制导入文件失败: %v, 正在从备份回滚", err)
+		log.Printf("Copy imported database file failed: %v, rolling back from backup", err)
 		os.Remove(absPath)
 		copyFile(backupPath, absPath)
 		a.db, _ = sql.Open("sqlite", dbPath)
@@ -101,7 +101,7 @@ func (a *App) handleImportDatabase(w http.ResponseWriter, r *http.Request) {
 	// 打开新数据库
 	newDB, err := sql.Open("sqlite", dbPath)
 	if err != nil {
-		log.Printf("打开导入数据库失败: %v, 正在从备份回滚", err)
+		log.Printf("Open imported database failed: %v, rolling back from backup", err)
 		os.Remove(absPath)
 		copyFile(backupPath, absPath)
 		a.db, _ = sql.Open("sqlite", dbPath)
@@ -119,7 +119,7 @@ func (a *App) handleImportDatabase(w http.ResponseWriter, r *http.Request) {
 	newDB.SetConnMaxLifetime(0)
 	newDB.SetConnMaxIdleTime(0)
 	if err := setupSQLite(newDB); err != nil {
-		log.Printf("配置导入数据库失败: %v, 正在从备份回滚", err)
+		log.Printf("Configure imported database failed: %v, rolling back from backup", err)
 		newDB.Close()
 		os.Remove(absPath)
 		copyFile(backupPath, absPath)
@@ -137,7 +137,7 @@ func (a *App) handleImportDatabase(w http.ResponseWriter, r *http.Request) {
 
 	// 迁移旧平台数据库结构（处理 settings 和 statustypes 表差异）
 	if err := migrateOldDatabaseSchema(newDB); err != nil {
-		log.Printf("迁移数据库结构失败: %v, 正在从备份回滚", err)
+		log.Printf("Database schema migration failed after import: %v, rolling back from backup", err)
 		newDB.Close()
 		os.Remove(absPath)
 		copyFile(backupPath, absPath)
@@ -151,6 +151,21 @@ func (a *App) handleImportDatabase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := ensureItemTypeSoftwareDefaults(newDB); err != nil {
+		log.Printf("item type software defaults failed after import: %v, rolling back", err)
+		newDB.Close()
+		os.Remove(absPath)
+		copyFile(backupPath, absPath)
+		a.db, _ = sql.Open("sqlite", dbPath)
+		setupSQLite(a.db)
+		a.db.SetMaxOpenConns(1)
+		a.db.SetMaxIdleConns(1)
+		a.db.SetConnMaxLifetime(0)
+		a.db.SetConnMaxIdleTime(0)
+		writeError(w, http.StatusInternalServerError, fmt.Sprintf("硬件类型支持软件默认值初始化失败: %v，已恢复原数据库", err))
+		return
+	}
+
 	// 检查导入的数据库是否有用户，没有则自动创建 admin
 	var userCount int64
 	if err := newDB.QueryRow("SELECT COUNT(*) FROM users").Scan(&userCount); err == nil && userCount == 0 {
@@ -158,11 +173,11 @@ func (a *App) handleImportDatabase(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			newDB.Exec(`INSERT INTO users (username, userdesc, pass, usertype) VALUES (?, ?, ?, ?)`,
 				"admin", "administrator", adminPass, 0)
-			log.Printf("导入的数据库无用户，已自动创建 admin 账户")
+			log.Printf("Imported database has no users, default admin account created")
 		}
 	}
 
-	log.Printf("数据库导入成功，备份文件: %s", backupPath)
+	log.Printf("Database import completed, backup file: %s", backupPath)
 	writeJSON(w, http.StatusOK, map[string]any{"ok": true, "message": "数据库导入成功"})
 }
 

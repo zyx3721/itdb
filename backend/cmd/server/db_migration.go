@@ -24,19 +24,19 @@ import (
 // 1. settings 表：从旧结构（包含 companytitle, dateformat 等字段）转换为新结构（仅 LDAP 字段）
 // 2. statustypes 表：添加 color 字段，并为固定的 4 个状态类型设置颜色
 func migrateOldDatabaseSchema(db *sql.DB) error {
-	log.Println("开始检查并迁移旧平台数据库结构...")
+	log.Println("Checking and migrating legacy database schema...")
 
 	// 1. 迁移 settings 表
 	if err := migrateSettingsTable(db); err != nil {
-		return fmt.Errorf("迁移 settings 表失败: %w", err)
+		return fmt.Errorf("migrate settings table failed: %w", err)
 	}
 
 	// 2. 迁移 statustypes 表
 	if err := migrateStatusTypesTable(db); err != nil {
-		return fmt.Errorf("迁移 statustypes 表失败: %w", err)
+		return fmt.Errorf("migrate statustypes table failed: %w", err)
 	}
 
-	log.Println("数据库结构迁移完成")
+	log.Println("Database schema migration completed")
 	return nil
 }
 
@@ -48,7 +48,7 @@ func migrateSettingsTable(db *sql.DB) error {
 	var tableName string
 	err := db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='settings'`).Scan(&tableName)
 	if err == sql.ErrNoRows {
-		log.Println("settings 表不存在，跳过迁移")
+		log.Println("settings table does not exist, skipping migration")
 		return nil
 	}
 	if err != nil {
@@ -71,11 +71,11 @@ func migrateSettingsTable(db *sql.DB) error {
 	}
 
 	if !hasOldFields {
-		log.Println("settings 表已是新结构，跳过迁移")
+		log.Println("settings table is already using the current schema, skipping migration")
 		return nil
 	}
 
-	log.Println("检测到旧结构 settings 表，开始迁移...")
+	log.Println("Legacy settings table detected, starting migration...")
 
 	// 开始事务
 	tx, err := db.Begin()
@@ -157,7 +157,7 @@ func migrateSettingsTable(db *sql.DB) error {
 		return err
 	}
 
-	log.Println("settings 表迁移完成")
+	log.Println("settings table migration completed")
 	return nil
 }
 
@@ -169,7 +169,7 @@ func migrateStatusTypesTable(db *sql.DB) error {
 	var tableName string
 	err := db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='statustypes'`).Scan(&tableName)
 	if err == sql.ErrNoRows {
-		log.Println("statustypes 表不存在，跳过迁移")
+		log.Println("statustypes table does not exist, skipping migration")
 		return nil
 	}
 	if err != nil {
@@ -192,11 +192,11 @@ func migrateStatusTypesTable(db *sql.DB) error {
 	}
 
 	if hasColorField {
-		log.Println("statustypes 表已有 color 字段，检查并更新颜色值...")
+		log.Println("statustypes table already has color column, checking color values...")
 		return updateStatusTypesColors(db)
 	}
 
-	log.Println("检测到旧结构 statustypes 表（无 color 字段），开始迁移...")
+	log.Println("Legacy statustypes table without color column detected, starting migration...")
 
 	// 开始事务
 	tx, err := db.Begin()
@@ -261,7 +261,7 @@ func migrateStatusTypesTable(db *sql.DB) error {
 		return err
 	}
 
-	log.Println("statustypes 表迁移完成")
+	log.Println("statustypes table migration completed")
 	return nil
 }
 
@@ -278,7 +278,7 @@ func updateStatusTypesColors(db *sql.DB) error {
 
 		rowsAffected, _ := result.RowsAffected()
 		if rowsAffected > 0 {
-			log.Printf("更新状态类型 '%s' 的颜色为 %s", statusDesc, color)
+			log.Printf("Updated status type %q color to %s", statusDesc, color)
 		}
 	}
 

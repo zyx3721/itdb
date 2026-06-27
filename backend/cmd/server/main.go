@@ -33,12 +33,13 @@ type contextKey string
 const userKey contextKey = "itdb_user"
 
 type Config struct {
-	ServerAddr   string
-	DBPath       string
-	UploadDir    string
-	JWTSecret    string
-	HistoryLimit int64
-	CORSOrigins  []string
+	ServerAddr               string
+	DBPath                   string
+	UploadDir                string
+	JWTSecret                string
+	HistoryLimit             int64
+	DailyBackupRetentionDays int
+	CORSOrigins              []string
 }
 
 type App struct {
@@ -68,12 +69,12 @@ func Run() {
 	loadDotEnvIfPresent()
 	cfg := loadConfig()
 	if err := ensureDatabaseInitialized(cfg); err != nil {
-		log.Fatalf("数据库初始化失败: %s", localizer.LocalizeMessage(err.Error()))
+		log.Fatalf("Database initialization failed: %s", err)
 	}
 
 	db, err := sql.Open("sqlite", cfg.DBPath)
 	if err != nil {
-		log.Fatalf("打开数据库失败: %s", localizer.LocalizeMessage(err.Error()))
+		log.Fatalf("Open database failed: %s", err)
 	}
 	defer db.Close()
 	db.SetMaxOpenConns(1)
@@ -82,28 +83,28 @@ func Run() {
 	db.SetConnMaxIdleTime(0)
 
 	if err := setupSQLite(db); err != nil {
-		log.Fatalf("初始化 SQLite 参数失败: %s", localizer.LocalizeMessage(err.Error()))
+		log.Fatalf("Initialize SQLite settings failed: %s", err)
 	}
 	if err := ensureStatusTypeColorSchema(db, cfg.DBPath); err != nil {
-		log.Fatalf("状态类型字段升级失败: %s", localizer.LocalizeMessage(err.Error()))
+		log.Fatalf("Upgrade status type color schema failed: %s", err)
 	}
 
 	if err := ensureItemTypeSoftwareDefaults(db); err != nil {
-		log.Fatalf("硬件类型支持软件默认值初始化失败: %s", localizer.LocalizeMessage(err.Error()))
+		log.Fatalf("Initialize item type software defaults failed: %s", err)
 	}
 
 	if err := ensureViewHistorySchema(db); err != nil {
-		log.Fatalf("最近历史记录表初始化失败: %s", localizer.LocalizeMessage(err.Error()))
+		log.Fatalf("Initialize view history schema failed: %s", err)
 	}
 	if err := ensureSettingsSchema(db, cfg.DBPath); err != nil {
-		log.Fatalf("系统设置表升级失败: %s", localizer.LocalizeMessage(err.Error()))
+		log.Fatalf("Upgrade settings schema failed: %s", err)
 	}
 	if err := ensureSettingsSecretsEncrypted(db, cfg.JWTSecret); err != nil {
-		log.Fatalf("系统设置敏感信息加密失败: %s", localizer.LocalizeMessage(err.Error()))
+		log.Fatalf("Encrypt settings secrets failed: %s", err)
 	}
 
 	if err := os.MkdirAll(cfg.UploadDir, 0o755); err != nil {
-		log.Fatalf("创建上传目录失败: %s", localizer.LocalizeMessage(err.Error()))
+		log.Fatalf("Create upload directory failed: %s", err)
 	}
 
 	app := &App{db: db, cfg: cfg}
@@ -112,9 +113,9 @@ func Run() {
 	go app.startDailyBackup()
 
 	addr := cfg.ServerAddr
-	log.Printf("ITDB Go API 已启动，监听地址: %s", addr)
+	log.Printf("ITDB Go API started, listening on %s", addr)
 	if err := http.ListenAndServe(addr, router); err != nil {
-		log.Fatalf("服务运行失败: %s", localizer.LocalizeMessage(err.Error()))
+		log.Fatalf("Server failed: %s", err)
 	}
 }
 
@@ -127,12 +128,13 @@ func loadConfig() Config {
 	}
 
 	return Config{
-		ServerAddr:   loadServerAddr(),
-		DBPath:       getenv("ITDB_DB_PATH", "./data/itdb.db"),
-		UploadDir:    getenv("ITDB_UPLOAD_DIR", "./data/files"),
-		JWTSecret:    getenv("ITDB_JWT_SECRET", "itdb-change-me"),
-		HistoryLimit: history,
-		CORSOrigins:  parseCSV(getenv("ITDB_CORS_ORIGINS", "*")),
+		ServerAddr:               loadServerAddr(),
+		DBPath:                   getenv("ITDB_DB_PATH", "./data/itdb.db"),
+		UploadDir:                getenv("ITDB_UPLOAD_DIR", "./data/files"),
+		JWTSecret:                getenv("ITDB_JWT_SECRET", "itdb-change-me"),
+		HistoryLimit:             history,
+		DailyBackupRetentionDays: loadDailyBackupRetentionDays(),
+		CORSOrigins:              parseCSV(getenv("ITDB_CORS_ORIGINS", "*")),
 	}
 }
 
@@ -237,7 +239,7 @@ func ensureStatusTypeColorSchema(db *sql.DB, dbPath string) error {
 		if err != nil {
 			return err
 		}
-		log.Printf("数据库备份完成: %s", backupPath)
+		log.Printf("Database backup completed: %s", backupPath)
 
 		if _, err := db.Exec(`ALTER TABLE statustypes ADD COLUMN color TEXT`); err != nil {
 			return err
@@ -261,7 +263,7 @@ func ensureItemTypeSoftwareDefaults(db *sql.DB) error {
 		if _, err := db.Exec(`UPDATE itemtypes SET hassoftware = 1`); err != nil {
 			return err
 		}
-		log.Printf("已将硬件类型“支持软件”默认值更新为“是”")
+		log.Printf("Item type software support defaults updated to enabled")
 	}
 	return nil
 }
@@ -312,7 +314,7 @@ func ensureSettingsSchema(db *sql.DB, dbPath string) error {
 			if err != nil {
 				return err
 			}
-			log.Printf("数据库备份完成: %s", backupPath)
+			log.Printf("Database backup completed: %s", backupPath)
 		}
 
 		tx, err := db.Begin()
@@ -457,7 +459,7 @@ func sqliteColumnExists(db *sql.DB, tableName, columnName string) (bool, error) 
 
 func backupDatabaseBeforeAlter(db *sql.DB, dbPath, tag string) (string, error) {
 	if strings.TrimSpace(dbPath) == "" || strings.EqualFold(strings.TrimSpace(dbPath), ":memory:") {
-		return "", errors.New("内存数据库无法生成文件备份")
+		return "", errors.New("in-memory database cannot create file backup")
 	}
 
 	absPath, err := filepath.Abs(dbPath)
@@ -487,7 +489,7 @@ func backupDatabaseBeforeAlter(db *sql.DB, dbPath, tag string) (string, error) {
 func (a *App) startDailyBackup() {
 	dbPath := strings.TrimSpace(a.cfg.DBPath)
 	if dbPath == "" || strings.EqualFold(dbPath, ":memory:") {
-		log.Printf("内存数据库，跳过每日自动备份")
+		log.Printf("In-memory database detected, skipping daily backup")
 		return
 	}
 
@@ -500,13 +502,14 @@ func (a *App) startDailyBackup() {
 		absPath, err := filepath.Abs(dbPath)
 		if err != nil {
 			a.dbMu.Unlock()
-			log.Printf("每日备份: 解析路径失败: %v", err)
+			log.Printf("Daily backup path resolution failed: %v", err)
 			continue
 		}
 
 		backupDir := filepath.Join(filepath.Dir(absPath), "backups")
 		os.MkdirAll(backupDir, 0o755)
-		stamp := time.Now().Format("20060102")
+		backupTime := time.Now()
+		stamp := backupTime.Format("20060102")
 		backupPath := filepath.Join(backupDir, fmt.Sprintf("itdb-%s.db", stamp))
 
 		escapedPath := strings.ReplaceAll(backupPath, "'", "''")
@@ -514,9 +517,12 @@ func (a *App) startDailyBackup() {
 		a.dbMu.Unlock()
 
 		if err != nil {
-			log.Printf("每日备份失败: %v", err)
+			log.Printf("Daily backup failed: %v", err)
 		} else {
-			log.Printf("每日备份完成: %s", backupPath)
+			log.Printf("Daily backup completed: %s", backupPath)
+			if err := cleanupExpiredDailyBackups(backupDir, a.cfg.DailyBackupRetentionDays, backupTime); err != nil {
+				log.Printf("Daily backup retention cleanup failed: %v", err)
+			}
 		}
 	}
 }

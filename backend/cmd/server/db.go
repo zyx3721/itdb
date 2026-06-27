@@ -139,11 +139,7 @@ func ensureDatabaseInitialized(cfg Config) error {
 	for i, statement := range databaseBootstrapSQL {
 		if _, err := tx.Exec(statement); err != nil {
 			_ = tx.Rollback()
-			preview := statement
-			if len(preview) > 240 {
-				preview = preview[:240] + "..."
-			}
-			return fmt.Errorf("execute bootstrap sql #%d failed: %w; statement=%s", i+1, err, preview)
+			return fmt.Errorf("execute bootstrap sql #%d failed: %w", i+1, err)
 		}
 	}
 
@@ -162,6 +158,6 @@ func ensureDatabaseInitialized(cfg Config) error {
 		return err
 	}
 
-	log.Printf("数据库初始化完成: db=%s, statements=%d", dbPath, len(databaseBootstrapSQL)+1)
+	log.Printf("Database initialized: db=%s, statements=%d", dbPath, len(databaseBootstrapSQL)+1)
 	return nil
 }
