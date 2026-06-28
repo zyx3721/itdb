@@ -79,7 +79,7 @@ jobs:
 
           echo "📝 生成校验和..."
           cd dist
-          sha256sum *.tar.gz > checksums.txt
+          sha256sum *.tar.gz > itdb_${VERSION}_checksums.txt
           cd ..
 
           echo "✅ 编译完成"
@@ -101,7 +101,7 @@ jobs:
 
           echo "📝 生成 Frontend 校验和..."
           cd dist-release
-          sha256sum *.tar.gz > checksums.txt
+          sha256sum *.tar.gz > itdb-frontend_${VERSION}_checksums.txt
           cd ..
 
           echo "✅ Frontend 构建完成"
@@ -156,7 +156,7 @@ jobs:
           - Frontend 静态资源包: \`itdb-frontend_${VERSION}.tar.gz\`
 
           ### 🔐 校验和
-          请下载对应的 \`checksums.txt\` 验证文件完整性。
+          请下载对应的 \`itdb_${VERSION}_checksums.txt\` 和 \`itdb-frontend_${VERSION}_checksums.txt\` 验证文件完整性。
           EOF
 
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
@@ -171,6 +171,6 @@ jobs:
           generate_release_notes: false
           files: |
             backend/dist/*.tar.gz
-            backend/dist/checksums.txt
+            backend/dist/*_checksums.txt
             frontend/dist-release/*.tar.gz
-            frontend/dist-release/checksums.txt
+            frontend/dist-release/*_checksums.txt
